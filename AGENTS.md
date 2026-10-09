@@ -47,3 +47,50 @@ gallery:
 - **Configurable Hardware/Local Vault**: The pipeline vault path is configurable via `content/settings/pipeline.json` (or `/studio/protocol`), with automatic detection for external hardware vaults / SSDs and local fallback (`.pipeline-vault/`).
 - **First-Time Setup**: Run `npm run pipeline:setup` (or use the Studio Protocol UI) on any new machine to scaffold all vault directories (`stage-in/`, `stage-out/`, `masters-archive/`, `zines/`).
 - **Manifest Tracking**: AI protection statuses and metadata are tracked in `content/settings/media-manifest.json`.
+
+## 6. Dual-Repository Architecture & Open-Source Backporting Protocol
+This codebase is maintained in a strict dual-repository topology:
+
+1. **Private Portfolio (`portfolio2026`)**:
+   - **Repository**: `https://github.com/drawablex86/portfolio2026.git`
+   - **Local Path**: `/Users/rahulrajeev/Downloads/portfolio`
+   - **Contents**: Full personal portfolio, private essays, artwork, sketches, residency zines (*As We Are Humans*), photography, and personal metadata.
+
+2. **Public Open-Source Template (`editorial-portfolio-template`)**:
+   - **Repository**: `https://github.com/drawablex86/editorial-portfolio-template.git`
+   - **Local Path**: `/Users/rahulrajeev/Downloads/editorial-portfolio-template`
+   - **Contents**: Clean SvelteKit 2 + Svelte 5 engine, Studio CMS, generic storage vault options, and dummy content (Linus Torvalds persona). Zero personal history or assets.
+
+### Strict Protocol for Upgrading the Open-Source Template
+When developing new features (e.g. Studio CMS tools, layout archetypes, bug fixes, performance optimizations) in the private repository and ready to release them to the public template:
+
+1. **Transfer Engine Code ONLY (Never Content or Static Images)**:
+   - Sync only modified files from `src/`, `scripts/`, or root configuration files (`package.json`, `vite.config.ts`, `svelte.config.js`):
+   ```bash
+   # Example: syncing a newly developed component or API route
+   rsync -av /Users/rahulrajeev/Downloads/portfolio/src/lib/components/studio/ \
+             /Users/rahulrajeev/Downloads/editorial-portfolio-template/src/lib/components/studio/
+   ```
+   - **NEVER copy** `content/` (`content/blog/`, `content/projects/`, `content/zines/`, `content/pages/`) or `static/images/`, `static/zines/`. The template must always keep its de-identified Linus dummy content.
+
+2. **Run Mandatory Pre-Flight Privacy Audit**:
+   Before committing in `editorial-portfolio-template`, run a grep check to guarantee zero personal data has leaked into code or comments:
+   ```bash
+   cd /Users/rahulrajeev/Downloads/editorial-portfolio-template
+   git grep -i -E "rahul|rajeev|mumbai|kerala|whole fragments|slowvv|as-we-are-humans" src/
+   ```
+   *Expected result: 0 occurrences.*
+
+3. **Verify Typecheck & Build**:
+   ```bash
+   npm run check
+   npm run build
+   ```
+
+4. **Commit & Push Upstream**:
+   ```bash
+   git add -A
+   git commit -m "feat(engine): <describe new feature or optimization>"
+   git push origin main
+   ```
+
