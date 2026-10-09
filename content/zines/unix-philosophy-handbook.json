@@ -1,0 +1,52 @@
+{
+  "id": "unix-philosophy-handbook",
+  "title": "The Unix Philosophy Handbook",
+  "subtitle": "Modular Systems, Pipes & Pragmatic Architecture",
+  "year": "2026",
+  "edition": "First Edition",
+  "printSpecs": "Offset Monochrome on Cold-Pressed Stone Stock",
+  "description": "A field handbook outlining the Unix philosophy: write programs that do one thing well, compose byte streams, make data structures direct, and never break user space.",
+  "coverSrc": "/zines/unix-philosophy/page-01.webp",
+  "pageCount": 6,
+  "aspectRatio": 0.707,
+  "texture": "matte",
+  "binding": "saddle-stitch",
+  "pages": [
+    {
+      "src": "/zines/unix-philosophy/page-01.webp",
+      "alt": "The Unix Philosophy Handbook — Cover",
+      "pageNumber": 1,
+      "title": "Cover"
+    },
+    {
+      "src": "/zines/unix-philosophy/page-02.webp",
+      "alt": "The Unix Philosophy Handbook — Modularity",
+      "pageNumber": 2,
+      "title": "Rule of Modularity"
+    },
+    {
+      "src": "/zines/unix-philosophy/page-03.webp",
+      "alt": "The Unix Philosophy Handbook — Composition",
+      "pageNumber": 3,
+      "title": "Rule of Composition"
+    },
+    {
+      "src": "/zines/unix-philosophy/page-04.webp",
+      "alt": "The Unix Philosophy Handbook — Simplicity",
+      "pageNumber": 4,
+      "title": "Rule of Simplicity"
+    },
+    {
+      "src": "/zines/unix-philosophy/page-05.webp",
+      "alt": "The Unix Philosophy Handbook — Representation",
+      "pageNumber": 5,
+      "title": "Rule of Representation"
+    },
+    {
+      "src": "/zines/unix-philosophy/page-06.webp",
+      "alt": "The Unix Philosophy Handbook — Robustness",
+      "pageNumber": 6,
+      "title": "Rule of Robustness"
+    }
+  ]
+}

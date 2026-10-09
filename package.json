@@ -1,0 +1,41 @@
+{
+  "name": "portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "images:optimize": "node scripts/process-images.mjs",
+    "images:stage-ai": "node scripts/process-images.mjs --stage-ai",
+    "images:dry-run": "node scripts/process-images.mjs --dry-run",
+    "pipeline:setup": "node scripts/setup-pipeline.mjs",
+    "audit": "node scripts/run-lighthouse.mjs",
+    "audit:desktop": "node scripts/run-lighthouse.mjs --desktop",
+    "audit:mobile": "node scripts/run-lighthouse.mjs --mobile"
+  },
+  "dependencies": {
+    "@lucide/svelte": "^1.52.0",
+    "gray-matter": "^4.0.3",
+    "marked": "^18.1.0",
+    "page-flip": "^2.0.7",
+    "pdfjs-dist": "^6.4.299",
+    "sharp": "^0.35.5"
+  },
+  "devDependencies": {
+    "@fontsource/geist": "^5.3.0",
+    "@fontsource/newsreader": "^5.3.0",
+    "@sveltejs/adapter-auto": "^3.3.1",
+    "@sveltejs/kit": "^2.70.3",
+    "@sveltejs/vite-plugin-svelte": "^5.1.1",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^20",
+    "svelte": "^5.57.2",
+    "svelte-check": "^4.7.6",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vite": "^6.4.4"
+  },
+  "type": "module"
+}

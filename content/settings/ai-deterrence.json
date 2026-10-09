@@ -1,0 +1,8 @@
+{
+  "reserveRights": true,
+  "blockTrainingCrawlers": true,
+  "allowSearchIndexers": true,
+  "tdmPolicyUrl": "/rights",
+  "customRobotsRules": "",
+  "effectiveDate": "October 2026"
+}

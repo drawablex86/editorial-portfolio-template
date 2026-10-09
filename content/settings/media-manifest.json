@@ -1,0 +1,76 @@
+{
+  "assets": {
+    "avatar.webp": {
+      "type": "art",
+      "label": "Author Avatar",
+      "aiProtected": false
+    },
+    "inspiration_cosmology.webp": {
+      "type": "art",
+      "label": "Hero Artwork",
+      "aiProtected": true,
+      "protectionMethod": "glaze",
+      "stageStatus": "cloaked_live"
+    },
+    "schematic-1.webp": {
+      "type": "art",
+      "label": "Technical Schematic 1",
+      "aiProtected": false
+    },
+    "schematic-2.webp": {
+      "type": "art",
+      "label": "Technical Schematic 2",
+      "aiProtected": false
+    },
+    "schematic-3.webp": {
+      "type": "art",
+      "label": "Technical Schematic 3",
+      "aiProtected": false
+    },
+    "schematic-4.webp": {
+      "type": "art",
+      "label": "Technical Schematic 4",
+      "aiProtected": false
+    },
+    "schematic-5.webp": {
+      "type": "art",
+      "label": "Technical Schematic 5",
+      "aiProtected": false
+    },
+    "schematic-6.webp": {
+      "type": "art",
+      "label": "Technical Schematic 6",
+      "aiProtected": false
+    },
+    "schematic-7.webp": {
+      "type": "art",
+      "label": "Technical Schematic 7",
+      "aiProtected": false
+    },
+    "projects/git-hero.webp": {
+      "type": "product_design",
+      "label": "Git Architecture",
+      "aiProtected": false
+    },
+    "projects/vfs-hero.webp": {
+      "type": "design",
+      "label": "VFS Subsystem",
+      "aiProtected": false
+    },
+    "projects/optics-hero.webp": {
+      "type": "photography",
+      "label": "Nordic Optics Hero",
+      "aiProtected": false
+    },
+    "projects/schematics-hero.webp": {
+      "type": "illustration",
+      "label": "Logic Schematics Hero",
+      "aiProtected": false
+    },
+    "projects/bench-hero.webp": {
+      "type": "experiment",
+      "label": "Micro-Bench Hero",
+      "aiProtected": false
+    }
+  }
+}

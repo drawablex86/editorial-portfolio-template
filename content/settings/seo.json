@@ -1,0 +1,43 @@
+{
+  "siteTitle": "Linus Torvalds — Systems Architecture & Engineering",
+  "titleTemplate": "%s | Linus Torvalds",
+  "defaultDescription": "Portfolio and digital workspace of Linus Torvalds — systems architect, software engineer, and open-source creator.",
+  "siteUrl": "https://example.com",
+  "defaultOgImage": "/images/avatar.webp",
+  "twitterHandle": "@torvalds",
+  "author": {
+    "name": "Linus Torvalds",
+    "jobTitle": "Systems Architect & Software Engineer",
+    "location": "Portland, Oregon",
+    "bio": "Creator of Linux and Git. Building sovereign, high-performance systems and exploring prime lens optics and hardware architecture.",
+    "avatar": "/images/avatar.webp",
+    "url": "https://example.com/about",
+    "sameAs": [
+      "https://github.com/torvalds",
+      "https://kernel.org",
+      "https://twitter.com/torvalds"
+    ]
+  },
+  "redirects": [
+    {
+      "from": "/work",
+      "to": "/works",
+      "status": 301
+    },
+    {
+      "from": "/projects",
+      "to": "/works",
+      "status": 301
+    },
+    {
+      "from": "/play",
+      "to": "/works",
+      "status": 301
+    },
+    {
+      "from": "/essays",
+      "to": "/blog",
+      "status": 301
+    }
+  ]
+}

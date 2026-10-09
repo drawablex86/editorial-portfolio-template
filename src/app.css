@@ -1,0 +1,230 @@
+@import "tailwindcss";
+@import "@fontsource/geist/index.css";
+@import "@fontsource/newsreader/index.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #F4F2ED;
+  --foreground: #2C2B29;
+  --surface: #FFFFFF;
+  --surface-subtle: #FAF9F5;
+  --subtle: #E8E6DF;
+  --border-muted: rgba(232, 230, 223, 0.6);
+  --paper-grain-opacity: 0.032;
+
+  --font-geist-sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-geist-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-newsreader: "Newsreader", Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+.dark {
+  --background: #141312;
+  --foreground: #EDE9E1;
+  --surface: #1C1B19;
+  --surface-subtle: #242320;
+  --subtle: #2E2C28;
+  --border-muted: rgba(46, 44, 40, 0.7);
+  --paper-grain-opacity: 0.048;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-canvas: var(--background);
+  --color-ink: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-subtle: var(--subtle);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-newsreader);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  position: relative;
+  transition: background-color 0.25s ease, color 0.25s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typographic utility classes */
+.font-display {
+  font-family: var(--font-newsreader);
+  font-optical-sizing: auto;
+  font-feature-settings: "liga" 1, "dlig" 1, "kern" 1;
+}
+
+/* Hide native arrow on desktop pointer devices to reveal Red Paper Plane, preserving text & studio inputs */
+@media (hover: hover) and (pointer: fine) {
+  body:not(:has([data-studio-mode])) {
+    cursor: none;
+  }
+
+  body:not(:has([data-studio-mode])) a,
+  body:not(:has([data-studio-mode])) button,
+  body:not(:has([data-studio-mode])) [role="button"],
+  body:not(:has([data-studio-mode])) label,
+  body:not(:has([data-studio-mode])) summary {
+    cursor: none;
+  }
+
+  /* Allow native text selection bar over inputs and textareas */
+  input, textarea {
+    cursor: text !important;
+  }
+}
+
+/* Cold-press / obsidian paper grain overlay */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: var(--paper-grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  transform: translateZ(0);
+  will-change: opacity;
+  transition: opacity 0.25s ease;
+}
+
+/* Editorial Markdown & Prose Typography Engine */
+.editorial-prose {
+  font-family: var(--font-newsreader);
+  font-optical-sizing: auto;
+  font-feature-settings: "liga" 1, "dlig" 1, "kern" 1;
+  font-size: 1.1875rem; /* ~19px for serene bookish reading measure */
+  line-height: 1.88;
+  color: #383531;
+  max-width: 68ch;
+}
+.dark .editorial-prose {
+  color: #DDD8CE;
+}
+
+.editorial-prose h1 {
+  font-family: var(--font-newsreader);
+  font-weight: 500;
+  font-size: 2.125rem;
+  letter-spacing: -0.02em;
+  color: #2c2b29;
+  margin-top: 2.5rem;
+  margin-bottom: 1.25rem;
+  line-height: 1.2;
+}
+.dark .editorial-prose h1 {
+  color: #ede9e1;
+}
+
+.editorial-prose h2 {
+  font-family: var(--font-geist-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: #78716c;
+  margin-top: 3rem;
+  margin-bottom: 0.85rem;
+}
+.dark .editorial-prose h2 {
+  color: #a8a29e;
+}
+
+.editorial-prose h3 {
+  font-family: var(--font-newsreader);
+  font-style: italic;
+  font-size: 1.35rem;
+  font-weight: 500;
+  color: #2c2b29;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.3;
+}
+.dark .editorial-prose h3 {
+  color: #ede9e1;
+}
+
+.editorial-prose p {
+  margin-bottom: 1.5rem;
+  text-wrap: pretty;
+}
+
+.editorial-prose strong {
+  font-weight: 600;
+  color: #2c2b29;
+}
+.dark .editorial-prose strong {
+  color: #ede9e1;
+}
+
+.editorial-prose em {
+  font-style: italic;
+}
+
+.editorial-prose ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin: 1.5rem 0;
+  font-size: 1.125rem;
+  color: #44403c;
+}
+.dark .editorial-prose ul {
+  color: #d6d3d1;
+}
+
+.editorial-prose li {
+  margin-bottom: 0.65rem;
+  line-height: 1.75;
+}
+
+.editorial-prose blockquote {
+  border-left: 2px solid #78716c;
+  padding-left: 1.5rem;
+  margin: 2rem 0;
+  font-style: italic;
+  font-size: 1.25rem;
+  line-height: 1.7;
+  color: #44403c;
+}
+.dark .editorial-prose blockquote {
+  border-left-color: #a8a29e;
+  color: #ede9e1;
+}
+
+.editorial-prose a {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-color: #a8a29e;
+  color: inherit;
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+}
+.editorial-prose a:hover {
+  color: #2c2b29;
+  text-decoration-color: #2c2b29;
+}
+.dark .editorial-prose a:hover {
+  color: #ede9e1;
+  text-decoration-color: #ede9e1;
+}
+
+.editorial-prose .editorial-duo,
+.editorial-prose .editorial-figure {
+  width: 100%;
+  max-width: 100%;
+  clear: both;
+}
+
+.editorial-prose .editorial-duo img,
+.editorial-prose .editorial-figure img {
+  display: block;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+}

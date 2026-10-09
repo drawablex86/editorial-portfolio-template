@@ -1,0 +1,34 @@
+{
+  "projects": [
+    {
+      "id": "git-content-tracker",
+      "aspectRatio": "16:10",
+      "cardSpan": "hero",
+      "badgeLabel": "Distributed Version Control"
+    },
+    {
+      "id": "linux-vfs-subsystem",
+      "aspectRatio": "16:10",
+      "cardSpan": "wide",
+      "badgeLabel": "Virtual Filesystem Architecture"
+    },
+    {
+      "id": "nordic-hardware-optics",
+      "aspectRatio": "3:2",
+      "cardSpan": "compact",
+      "badgeLabel": "Prime Lens Documentary Series"
+    },
+    {
+      "id": "microprocessor-schematics",
+      "aspectRatio": "4:5",
+      "cardSpan": "compact",
+      "badgeLabel": "Technical Logic Drafting"
+    },
+    {
+      "id": "micro-bench-engine",
+      "aspectRatio": "16:10",
+      "cardSpan": "wide",
+      "badgeLabel": "Nanosecond Latency Profiler"
+    }
+  ]
+}
