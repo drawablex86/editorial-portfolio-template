@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { ProjectItem } from '$lib/types';
   import MarkdownRenderer from '$lib/components/common/MarkdownRenderer.svelte';
+  import Image from '$lib/components/common/Image.svelte';
   import { ExternalLink, Play, Layers } from '@lucide/svelte';
 
   const FALLBACK_IMAGE = "/images/inspiration_cosmology.webp";
@@ -100,10 +101,13 @@
   <!-- Main Hero Image -->
   {#if project.thumbnailSrc}
     <div class="aspect-[16/9] w-full overflow-hidden rounded-xs bg-[#E8E6DF] dark:bg-[#1C1B19] shadow-md border border-[#E8E6DF] dark:border-[#2E2C28] relative group">
-      <img
+      <Image
         src={project.thumbnailSrc}
         alt={project.title}
-        onerror={(e) => { (e.currentTarget as HTMLImageElement).src = FALLBACK_IMAGE; }}
+        sizes="hero"
+        width={2400}
+        priority="lcp"
+        fallbackSrc={FALLBACK_IMAGE}
         class="w-full h-full object-cover"
       />
       {#if project.liveUrl}
@@ -138,11 +142,12 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         {#each project.gallery as img, idx}
           <div class="overflow-hidden rounded-xs bg-[#E8E6DF] dark:bg-[#1C1B19] border border-[#E8E6DF] dark:border-[#2E2C28] shadow-xs relative aspect-video">
-            <img
+            <Image
               src={img}
               alt="{project.title} Interface Flow {idx + 1}"
-              loading="lazy"
-              onerror={(e) => { (e.currentTarget as HTMLImageElement).src = FALLBACK_IMAGE; }}
+              sizes="halfGrid"
+              width={2400}
+              fallbackSrc={FALLBACK_IMAGE}
               class="w-full h-full object-cover hover:scale-102 transition-transform duration-500"
             />
           </div>

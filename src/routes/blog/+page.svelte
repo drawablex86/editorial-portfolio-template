@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { goto } from '$app/navigation';
-  import { Search, X, Tag, Shuffle, ArrowUpRight } from '@lucide/svelte';
+  import { Search, X, Tag, ArrowUpRight } from '@lucide/svelte';
   import SEOHead from '$lib/components/common/SEOHead.svelte';
   import MarkovMarginaliaCanvas from '$lib/components/blog/MarkovMarginaliaCanvas.svelte';
 
@@ -9,7 +8,12 @@
 
   let blogData = $derived(data.blogData ?? []);
   let linguisticCorpus = $derived(data.linguisticCorpus);
+  // Seed from ?q= so shared/bookmarked searches survive the round trip, then
+  // stay locally controllable. Re-syncs whenever the incoming query changes.
   let searchQuery = $state('');
+  $effect(() => {
+    searchQuery = data.initialQuery ?? '';
+  });
   let selectedTag = $state<string | null>(null);
   let searchInputEl = $state<HTMLInputElement | null>(null);
   let isSearchFocused = $state(false);
@@ -64,7 +68,8 @@
     const randomIndex = Math.floor(Math.random() * blogData.length);
     const chosen = blogData[randomIndex];
     if (chosen?.id) {
-      goto(`/blog/${chosen.id}`);
+      // Full page load — see the note in +layout.svelte.
+      window.location.assign(`/blog/${chosen.id}`);
     }
   }
 
@@ -96,8 +101,8 @@
 </script>
 
 <SEOHead
-  title="Writing &amp; Notes — Systems Essays"
-  description="Essays on systems architecture, kernel engineering, data structure taste, and software craftsmanship by Linus Torvalds."
+  title="Writing &amp; Editorial Archive"
+  description="Essays on art theory, creative labour, cultural criticism, and systems thinking by Linus Torvalds."
 />
 
 <div class="max-w-4xl mx-auto space-y-10">
@@ -109,7 +114,11 @@
       </span>
       <div class="flex items-center gap-3">
         {#if blogData.length > 0}
-          <span class="text-xs text-stone-500 dark:text-stone-400 font-mono">
+          <span
+            role="status"
+            aria-live="polite"
+            class="text-xs text-stone-500 dark:text-stone-400 font-mono"
+          >
             {filteredPosts.length === blogData.length
               ? `${blogData.length} essays`
               : `${filteredPosts.length} of ${blogData.length} essays`}
@@ -118,23 +127,9 @@
       </div>
     </div>
 
-    <div class="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4">
-      <h1 class="text-3xl sm:text-4xl md:text-5xl font-serif font-medium tracking-tight text-[#2C2B29] dark:text-[#EDE9E1]">
-        Essays &amp; Notes
-      </h1>
-
-      {#if blogData.length > 0}
-        <button
-          type="button"
-          onclick={triggerRandomRead}
-          title="Pick a serendipitous essay to read"
-          class="self-start sm:self-auto inline-flex items-center gap-2 px-3 py-1.5 text-xs font-mono uppercase tracking-wider rounded border border-[#E8E6DF] dark:border-[#2E2C28] bg-[#FAF9F5]/80 dark:bg-[#1C1B19] text-stone-700 dark:text-stone-300 hover:text-[#2C2B29] dark:hover:text-[#EDE9E1] hover:border-stone-400 dark:hover:border-stone-600 transition-all shadow-2xs hover:shadow-xs active:scale-98 cursor-pointer group"
-        >
-          <Shuffle size={13} class="text-stone-500 dark:text-stone-400 group-hover:rotate-45 transition-transform duration-300" />
-          <span>Serendipity / Random</span>
-        </button>
-      {/if}
-    </div>
+    <h1 class="text-3xl sm:text-4xl md:text-5xl font-serif font-medium tracking-tight text-[#2C2B29] dark:text-[#EDE9E1]">
+      Essays &amp; Notes
+    </h1>
 
     <p class="font-sans text-sm text-stone-600 dark:text-stone-400 max-w-2xl leading-relaxed">
       Observational essays, technical notes, systems architecture, and engineering principles.
@@ -260,9 +255,24 @@
           </div>
 
           <div class="flex items-baseline md:flex-col md:items-end space-x-3 md:space-x-0 md:space-y-1.5 text-xs tracking-widest text-stone-500 dark:text-stone-400 uppercase font-mono md:text-right md:max-w-[190px] shrink-0">
-            <div>
-              <span>{post.year}</span>
+            <div class="flex items-center gap-2 md:justify-end">
+              {#if post.publishDate}
+                <time datetime={post.publishDate} class="normal-case tracking-normal">
+                  {new Date(post.publishDate).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                  })}
+                </time>
+              {:else if post.year}
+                <span>{post.year}</span>
+              {/if}
             </div>
+            {#if post.readingTime}
+              <span class="text-[11px] text-stone-400 dark:text-stone-500 normal-case tracking-normal md:order-last">
+                {post.readingTime}
+              </span>
+            {/if}
             {#if post.tags}
               <span class="leading-relaxed truncate max-w-full text-[11px] text-stone-400 dark:text-stone-500">{post.tags}</span>
             {/if}

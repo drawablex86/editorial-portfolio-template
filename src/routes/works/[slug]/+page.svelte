@@ -5,6 +5,7 @@
   import PhotoAlbumLayout from '$lib/components/layouts/PhotoAlbumLayout.svelte';
   import IllustrationLayout from '$lib/components/layouts/IllustrationLayout.svelte';
   import SEOHead from '$lib/components/common/SEOHead.svelte';
+  import WorkSiblingNav from '$lib/components/work/WorkSiblingNav.svelte';
 
   let { data } = $props();
   let project = $derived(data.work || data.project);
@@ -56,4 +57,6 @@
     <!-- Default presentation (Experiments, Writing, General) -->
     <CaseStudyLayout {project} />
   {/if}
+
+  <WorkSiblingNav prevWork={data.prevWork} nextWork={data.nextWork} />
 </div>

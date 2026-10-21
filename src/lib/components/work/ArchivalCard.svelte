@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { ProjectItem } from '$lib/types';
   import { ArrowUpRight } from '@lucide/svelte';
+  import Image from '$lib/components/common/Image.svelte';
 
   const FALLBACK_IMAGE = "/images/inspiration_cosmology.webp";
 
@@ -98,13 +99,13 @@
     <div
       class="w-full {resolvedAspect} overflow-hidden rounded bg-[#E8E6DF] dark:bg-[#1C1B19] relative border border-[#E8E6DF] dark:border-[#2E2C28] shadow-xs group-hover:shadow-lg transition-all duration-500"
     >
-      <img
+      <Image
         src={imageSrc}
         alt={project.title}
-        loading={isHero ? 'eager' : 'lazy'}
-        fetchpriority={isHero ? 'high' : 'auto'}
-        decoding="async"
-        onerror={(e) => { (e.currentTarget as HTMLImageElement).src = FALLBACK_IMAGE; }}
+        sizes="card"
+        width={isHero ? 2880 : 1200}
+        priority={isHero ? 'lcp' : 'lazy'}
+        fallbackSrc={FALLBACK_IMAGE}
         class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-102"
       />
 

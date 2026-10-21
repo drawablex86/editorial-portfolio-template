@@ -30,7 +30,7 @@
       }
     }}
     aria-label="View book details for {book.title} by {book.author}"
-    class="relative cursor-pointer group flex flex-col items-center justify-end transition-transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-amber-500 rounded-xs z-10"
+    class="relative cursor-pointer group flex flex-col items-center justify-end transition-transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-[#2C2B29] dark:focus:ring-[#EDE9E1] rounded-xs z-10"
     style="width: {Math.min(heightPx * 0.75, 170)}px;"
   >
     <div
@@ -58,7 +58,7 @@
       }
     }}
     aria-label="View book details for {book.title} by {book.author}"
-    class="relative cursor-pointer group flex items-end transform transition-transform duration-300 hover:scale-[1.04] hover:-translate-y-3 focus:outline-none focus:ring-2 focus:ring-amber-500 rounded-xs z-10"
+    class="relative cursor-pointer group flex items-end transform transition-transform duration-300 hover:scale-[1.04] hover:-translate-y-3 focus:outline-none focus:ring-2 focus:ring-[#2C2B29] dark:focus:ring-[#EDE9E1] rounded-xs z-10"
     style="height: {heightPx}px; width: {thicknessPx}px; {isLeaning ? `transform: rotate(${leanAngle}deg);` : ''} transform-origin: bottom center;"
   >
     <div

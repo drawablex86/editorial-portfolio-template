@@ -1,23 +1,26 @@
 import type { RequestHandler } from './$types';
 import { getSeoSettings, toAbsoluteUrl } from '$lib/server/seo';
 import { getAllProjects, getMarkdownItems } from '$lib/server/content';
+import { getAllZines } from '$lib/server/zines';
 
 export const GET: RequestHandler = async () => {
   const settings = getSeoSettings();
   const baseUrl = settings.siteUrl.replace(/\/+$/, '');
 
-  const now = new Date().toISOString().split('T')[0];
+  const today = new Date().toISOString().split('T')[0];
 
-  // Core static pages with priority and change frequencies
+  // Core static pages. Static pages have no per-page content date, so we omit
+  // lastmod entirely rather than falsely claiming they changed today.
   const corePages = [
-    { loc: `${baseUrl}/`, priority: '1.0', changefreq: 'weekly', lastmod: now },
-    { loc: `${baseUrl}/works`, priority: '0.9', changefreq: 'weekly', lastmod: now },
-    { loc: `${baseUrl}/blog`, priority: '0.8', changefreq: 'weekly', lastmod: now },
-    { loc: `${baseUrl}/about`, priority: '0.8', changefreq: 'monthly', lastmod: now },
-    { loc: `${baseUrl}/rights`, priority: '0.8', changefreq: 'monthly', lastmod: now },
-    { loc: `${baseUrl}/now`, priority: '0.7', changefreq: 'monthly', lastmod: now },
-    { loc: `${baseUrl}/library`, priority: '0.6', changefreq: 'monthly', lastmod: now },
-    { loc: `${baseUrl}/inspiration`, priority: '0.6', changefreq: 'monthly', lastmod: now },
+    { loc: `${baseUrl}/`, priority: '1.0', changefreq: 'weekly' },
+    { loc: `${baseUrl}/works`, priority: '0.9', changefreq: 'weekly' },
+    { loc: `${baseUrl}/blog`, priority: '0.8', changefreq: 'weekly' },
+    { loc: `${baseUrl}/zines`, priority: '0.8', changefreq: 'monthly' },
+    { loc: `${baseUrl}/about`, priority: '0.8', changefreq: 'monthly' },
+    { loc: `${baseUrl}/rights`, priority: '0.8', changefreq: 'monthly' },
+    { loc: `${baseUrl}/now`, priority: '0.7', changefreq: 'monthly' },
+    { loc: `${baseUrl}/library`, priority: '0.6', changefreq: 'monthly' },
+    { loc: `${baseUrl}/inspiration`, priority: '0.6', changefreq: 'monthly' },
   ];
 
   // Projects
@@ -27,7 +30,7 @@ export const GET: RequestHandler = async () => {
       loc: `${baseUrl}/works/${encodeURIComponent(p.id)}`,
       priority: p.featured ? '0.85' : '0.75',
       changefreq: 'monthly',
-      lastmod: p.publishDate || now,
+      lastmod: p.publishDate || today,
     }));
 
   // Blog Essays
@@ -37,10 +40,23 @@ export const GET: RequestHandler = async () => {
       loc: `${baseUrl}/blog/${encodeURIComponent(b.id)}`,
       priority: '0.75',
       changefreq: 'monthly',
-      lastmod: b.publishDate || now,
+      lastmod: b.publishDate || today,
     }));
 
-  const allUrls = [...corePages, ...projects, ...blogPosts];
+  // Zines / print ephemera
+  const zines = getAllZines().map((z) => ({
+    loc: `${baseUrl}/zines/${encodeURIComponent(z.id)}`,
+    priority: '0.65',
+    changefreq: 'monthly',
+    lastmod: z.year ? `${z.year}-01-01` : today,
+  }));
+
+  const allUrls: Array<{ loc: string; priority: string; changefreq: string; lastmod?: string }> = [
+    ...corePages,
+    ...projects,
+    ...blogPosts,
+    ...zines,
+  ];
 
   const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -48,8 +64,7 @@ ${allUrls
   .map(
     (item) => `  <url>
     <loc>${item.loc}</loc>
-    <lastmod>${item.lastmod}</lastmod>
-    <changefreq>${item.changefreq}</changefreq>
+${item.lastmod ? `    <lastmod>${item.lastmod}</lastmod>\n` : ''}    <changefreq>${item.changefreq}</changefreq>
     <priority>${item.priority}</priority>
   </url>`
   )

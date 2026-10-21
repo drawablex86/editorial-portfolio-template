@@ -31,6 +31,7 @@
   let rafId: number | null = null;
   let isVisible = true;
   let simTime = 0;
+  let reducedMotion = false;
 
   // Pointer tracking
   let mouseX = -1000;
@@ -243,7 +244,7 @@
 
   function step() {
     if (!isPlaying || !isVisible || !ctx || !canvasRef || height === 0) {
-      rafId = requestAnimationFrame(step);
+      if (!reducedMotion) rafId = requestAnimationFrame(step);
       return;
     }
 
@@ -442,7 +443,8 @@
       }
     }
 
-    rafId = requestAnimationFrame(step);
+    // Respect prefers-reduced-motion: hold the static frame
+    if (!reducedMotion) rafId = requestAnimationFrame(step);
   }
 
   function checkTheme() {
@@ -452,6 +454,7 @@
   }
 
   onMount(() => {
+    reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     checkTheme();
     const observer = new MutationObserver(() => checkTheme());
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
@@ -476,7 +479,12 @@
     });
     if (containerRef) io.observe(containerRef);
 
-    rafId = requestAnimationFrame(step);
+    // Draw a single static frame when reduced motion is requested
+    if (reducedMotion) {
+      step();
+    } else {
+      rafId = requestAnimationFrame(step);
+    }
 
     return () => {
       window.removeEventListener('resize', handleResize);

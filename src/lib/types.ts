@@ -207,6 +207,14 @@ export interface AuthorProfile {
   sameAs: string[];
 }
 
+export interface GoatCounterConfig {
+  enabled: boolean;
+  code: string;
+  domain?: string;
+  allowFrame?: boolean;
+  email?: string;
+}
+
 export interface AiDeterrenceConfig {
   reserveRights: boolean;
   blockTrainingCrawlers: boolean;
@@ -232,6 +240,7 @@ export interface SeoSettings {
   twitterHandle: string;
   author: AuthorProfile;
   redirects: RedirectRule[];
+  goatCounter: GoatCounterConfig;
 }
 
 export interface CorpusWord {

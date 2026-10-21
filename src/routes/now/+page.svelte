@@ -7,8 +7,8 @@
 </script>
 
 <SEOHead
-  title="Now — Current Engineering Focus"
-  description={nowData?.subtitle || 'What Linus Torvalds is actively focused on, reading, building, and benchmarking right now.'}
+  title="Now — Current Creative Focus"
+  description={nowData?.subtitle || 'What Linus Torvalds is actively focused on, reading, building, and exploring right now.'}
 />
 
 <div class="max-w-4xl mx-auto space-y-12">

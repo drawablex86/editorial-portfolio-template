@@ -7,6 +7,9 @@
     description?: string;
     ogImage?: string;
     ogType?: 'website' | 'article' | 'profile';
+    ogImageWidth?: number;
+    ogImageHeight?: number;
+    ogImageAlt?: string;
     publishDate?: string;
     noIndex?: boolean;
     canonicalPath?: string;
@@ -17,6 +20,9 @@
     description,
     ogImage,
     ogType = 'website',
+    ogImageWidth,
+    ogImageHeight,
+    ogImageAlt,
     publishDate,
     noIndex = false,
     canonicalPath,
@@ -36,7 +42,7 @@
   });
 
   let computedDescription = $derived(
-    description || settings?.defaultDescription || 'Portfolio of Linus Torvalds — systems architect and software engineer.'
+    description || settings?.defaultDescription || 'Portfolio and digital workspace of Linus Torvalds — systems architect, software engineer, and open-source creator.'
   );
 
   // Compute canonical URL
@@ -58,7 +64,8 @@
     return `${cleanBaseUrl}${cleanImg}`;
   });
 
-  let twitterHandle = $derived(settings?.twitterHandle || '@torvalds');
+  // Social handle is optional — never invent one when settings omit it.
+  let twitterHandle = $derived(settings?.twitterHandle || '');
   let authorProfile = $derived(settings?.author);
   let aiDeterrence = $derived<AiDeterrenceConfig | undefined>(page.data?.aiDeterrenceSettings);
 
@@ -173,10 +180,21 @@
   <!-- OpenGraph / Facebook -->
   <meta property="og:type" content={ogType} />
   <meta property="og:site_name" content={settings?.siteTitle || 'Linus Torvalds'} />
+  <meta property="og:locale" content="en_US" />
   <meta property="og:url" content={canonicalUrl} />
   <meta property="og:title" content={computedTitle} />
   <meta property="og:description" content={computedDescription} />
   <meta property="og:image" content={computedOgImage} />
+  <meta property="og:image:alt" content={ogImageAlt || computedTitle} />
+  {#if ogImageWidth}
+    <meta property="og:image:width" content={String(ogImageWidth)} />
+  {/if}
+  {#if ogImageHeight}
+    <meta property="og:image:height" content={String(ogImageHeight)} />
+  {/if}
+  {#if ogType === 'article' && publishDate}
+    <meta property="article:published_time" content={publishDate} />
+  {/if}
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />

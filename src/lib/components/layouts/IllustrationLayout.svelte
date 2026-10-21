@@ -1,7 +1,9 @@
 <script lang="ts">
   import type { ProjectItem } from '$lib/types';
   import MarkdownRenderer from '$lib/components/common/MarkdownRenderer.svelte';
-  import { ZoomIn, ZoomOut, RotateCcw } from '@lucide/svelte';
+  import ImageLightbox, { type LightboxItem } from '$lib/components/common/ImageLightbox.svelte';
+  import Image from '$lib/components/common/Image.svelte';
+  import { ZoomIn, ZoomOut, RotateCcw, Maximize2 } from '@lucide/svelte';
 
   const FALLBACK_IMAGE = "/images/inspiration_cosmology.webp";
 
@@ -12,11 +14,33 @@
   let { project }: Props = $props();
 
   let zoomLevel = $state(1);
+  let lightboxIndex = $state<number | null>(null);
 
   let artworks = $derived(
     project.gallery && project.gallery.length > 0
       ? project.gallery
       : (project.thumbnailSrc ? [project.thumbnailSrc] : [])
+  );
+
+  let plateNoun = $derived(project.projectType === 'sketchbook' ? 'sketch' : 'study');
+
+  let lightboxItems = $derived<LightboxItem[]>(
+    artworks.map((src, idx) => ({
+      src,
+      alt:
+        idx === 0
+          ? `${project.title}${project.year ? ` (${project.year})` : ''} — ${plateNoun}, ${project.medium || 'mixed media'}`
+          : `${project.title} — ${plateNoun} plate ${idx + 1} of ${artworks.length}, ${project.medium || 'mixed media'}`,
+      caption: idx === 0 ? project.title : `Plate ${idx + 1}`
+    }))
+  );
+
+  let lightboxExif = $derived(
+    [
+      project.medium ? { label: 'Medium', value: project.medium } : null,
+      project.dimensions ? { label: 'Dimensions', value: project.dimensions } : null,
+      project.year ? { label: 'Year', value: project.year } : null
+    ].filter((row): row is { label: string; value: string } => row !== null)
   );
 
   function handleZoomIn() {
@@ -100,14 +124,26 @@
           style="transform: scale({zoomLevel}); transition: transform 0.3s ease-out;"
           class="origin-center max-w-full max-h-full"
         >
-          <img
+          <Image
             src={artworks[0]}
-            alt={project.title}
-            onerror={(e) => { (e.currentTarget as HTMLImageElement).src = FALLBACK_IMAGE; }}
+            alt="{project.title}{project.year ? ` (${project.year})` : ''} — {plateNoun}, {project.medium || 'mixed media'}"
+            sizes="hero"
+            width={2400}
+            priority="lcp"
+            fallbackSrc={FALLBACK_IMAGE}
             class="max-h-[70vh] w-auto object-contain mx-auto shadow-xs"
           />
         </div>
       </div>
+
+      <button
+        type="button"
+        onclick={() => (lightboxIndex = 0)}
+        class="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded border border-[#E8E6DF] dark:border-[#2E2C28] bg-[#FAF9F5]/80 dark:bg-[#1C1B19] text-xs font-mono uppercase tracking-widest text-stone-600 dark:text-stone-400 hover:text-[#2C2B29] dark:hover:text-[#EDE9E1] hover:border-stone-400 dark:hover:border-stone-600 transition-all cursor-pointer"
+      >
+        <Maximize2 size={14} />
+        <span>View Full Resolution</span>
+      </button>
     </section>
   {/if}
 
@@ -127,17 +163,39 @@
       </h3>
       <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
         {#each artworks.slice(1) as src, idx}
-          <div class="bg-white dark:bg-[#1C1B19] p-2 rounded-xs border border-[#E8E6DF] dark:border-[#2E2C28]">
-            <img
+          <button
+            type="button"
+            onclick={() => (lightboxIndex = idx + 1)}
+            aria-label="View plate {idx + 2} of {artworks.length} full resolution"
+            class="group relative bg-white dark:bg-[#1C1B19] p-2 rounded-xs border border-[#E8E6DF] dark:border-[#2E2C28] cursor-pointer hover:border-stone-400 dark:hover:border-stone-600 transition-colors"
+          >
+            <Image
               src={src}
-              alt="Study plate {idx + 2}"
-              onerror={(e) => { (e.currentTarget as HTMLImageElement).src = FALLBACK_IMAGE; }}
+              alt="{project.title} — {plateNoun} plate {idx + 2} of {artworks.length}"
+              sizes="thirdGrid"
+              width={2400}
+              fallbackSrc={FALLBACK_IMAGE}
               class="w-full aspect-[4/5] object-contain"
-              loading="lazy"
             />
-          </div>
+            <span class="absolute bottom-3 right-3 p-1.5 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity pointer-events-none">
+              <ZoomIn size={13} />
+            </span>
+            <span class="absolute top-3 left-3 px-1.5 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-black/50 text-white pointer-events-none">
+              {idx + 2}
+            </span>
+          </button>
         {/each}
       </div>
     </section>
   {/if}
 </article>
+
+<ImageLightbox
+  items={lightboxItems}
+  index={lightboxIndex}
+  onClose={() => (lightboxIndex = null)}
+  onIndexChange={(i) => (lightboxIndex = i)}
+  label="Artwork viewer"
+  fallbackSrc={FALLBACK_IMAGE}
+  exif={lightboxExif}
+/>

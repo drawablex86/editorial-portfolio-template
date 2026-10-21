@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import type { ProjectItem } from '$lib/types';
   import MarkdownRenderer from '$lib/components/common/MarkdownRenderer.svelte';
-  import { Camera, MapPin, Sliders, X, ChevronLeft, ChevronRight } from '@lucide/svelte';
+  import ImageLightbox, { type LightboxItem } from '$lib/components/common/ImageLightbox.svelte';
+  import Image from '$lib/components/common/Image.svelte';
+  import { Camera, MapPin, Sliders } from '@lucide/svelte';
 
   const FALLBACK_IMAGE = "/images/inspiration_cosmology.webp";
 
@@ -20,39 +21,24 @@
       : (project.thumbnailSrc ? [project.thumbnailSrc] : [])
   );
 
-  function openLightbox(index: number) {
-    selectedPhotoIndex = index;
-  }
+  let lightboxItems = $derived<LightboxItem[]>(
+    photos.map((src, idx) => ({
+      src,
+      alt: `${project.title} — frame ${idx + 1} of ${photos.length}${
+        project.location ? `, photographed in ${project.location}` : ''
+      }`,
+      caption: `${project.title} · Frame ${idx + 1}`
+    }))
+  );
 
-  function closeLightbox() {
-    selectedPhotoIndex = null;
-  }
-
-  function prevPhoto() {
-    if (selectedPhotoIndex === null) return;
-    selectedPhotoIndex = (selectedPhotoIndex - 1 + photos.length) % photos.length;
-  }
-
-  function nextPhoto() {
-    if (selectedPhotoIndex === null) return;
-    selectedPhotoIndex = (selectedPhotoIndex + 1) % photos.length;
-  }
-
-  onMount(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (selectedPhotoIndex === null) return;
-      if (e.key === 'Escape') {
-        closeLightbox();
-      } else if (e.key === 'ArrowLeft') {
-        prevPhoto();
-      } else if (e.key === 'ArrowRight') {
-        nextPhoto();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  });
+  let lightboxExif = $derived(
+    [
+      project.camera ? { label: 'Camera', value: project.camera } : null,
+      project.lens ? { label: 'Lens', value: project.lens } : null,
+      project.location ? { label: 'Location', value: project.location } : null,
+      project.year ? { label: 'Year', value: project.year } : null
+    ].filter((row): row is { label: string; value: string } => row !== null)
+  );
 </script>
 
 <article class="max-w-5xl mx-auto space-y-12">
@@ -108,76 +94,38 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
       {#each photos as src, idx}
         <div
-          onclick={() => openLightbox(idx)}
+          onclick={() => (selectedPhotoIndex = idx)}
           onkeydown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
-              openLightbox(idx);
+              selectedPhotoIndex = idx;
             }
           }}
           tabindex="0"
           role="button"
-          aria-label="Enlarge photo frame {idx + 1}"
+          aria-label="Enlarge frame {idx + 1} of {photos.length}"
           class="group cursor-pointer overflow-hidden rounded-xs bg-[#E8E6DF] dark:bg-[#1C1B19] border border-[#E8E6DF] dark:border-[#2E2C28] transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#2C2B29] dark:focus:ring-[#EDE9E1] {idx % 3 === 0 ? 'md:col-span-2 aspect-[16/9]' : 'aspect-[4/5]'}"
         >
-          <img
+          <Image
             src={src}
-            alt="{project.title} — Frame {idx + 1}"
-            onerror={(e) => { (e.currentTarget as HTMLImageElement).src = FALLBACK_IMAGE; }}
+            alt="{project.title} — frame {idx + 1} of {photos.length}"
+            sizes={idx % 3 === 0 ? 'hero' : 'halfGrid'}
+            width={2880}
+            fallbackSrc={FALLBACK_IMAGE}
             class="w-full h-full object-cover group-hover:scale-102 transition-transform duration-700"
-            loading="lazy"
           />
         </div>
       {/each}
     </div>
   </section>
-
-  <!-- Lightbox Modal -->
-  {#if selectedPhotoIndex !== null}
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label="Photo Lightbox"
-      class="fixed inset-0 z-50 bg-[#141312]/95 backdrop-blur-md flex items-center justify-center p-4"
-    >
-      <button
-        onclick={closeLightbox}
-        aria-label="Close Lightbox"
-        title="Close (Esc)"
-        class="absolute top-4 right-4 sm:top-6 sm:right-6 text-stone-300 hover:text-white p-3 rounded-full hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white cursor-pointer min-w-[48px] min-h-[48px] flex items-center justify-center"
-      >
-        <X size={24} />
-      </button>
-
-      <button
-        onclick={prevPhoto}
-        aria-label="Previous Photo"
-        title="Previous (Arrow Left)"
-        class="absolute left-2 sm:left-6 text-stone-300 hover:text-white p-3 sm:p-4 rounded-full hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white cursor-pointer min-w-[48px] min-h-[48px] flex items-center justify-center"
-      >
-        <ChevronLeft size={32} />
-      </button>
-
-      <div class="max-w-5xl max-h-[85vh] flex flex-col items-center">
-        <img
-          src={photos[selectedPhotoIndex]}
-          alt="Expanded frame {selectedPhotoIndex + 1}"
-          onerror={(e) => { (e.currentTarget as HTMLImageElement).src = FALLBACK_IMAGE; }}
-          class="max-h-[80vh] w-auto max-w-full object-contain rounded-xs shadow-2xl"
-        />
-        <span class="text-stone-300 text-xs font-mono mt-3">
-          {selectedPhotoIndex + 1} / {photos.length}
-        </span>
-      </div>
-
-      <button
-        onclick={nextPhoto}
-        aria-label="Next Photo"
-        title="Next (Arrow Right)"
-        class="absolute right-2 sm:right-6 text-stone-300 hover:text-white p-3 sm:p-4 rounded-full hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white cursor-pointer min-w-[48px] min-h-[48px] flex items-center justify-center"
-      >
-        <ChevronRight size={32} />
-      </button>
-    </div>
-  {/if}
 </article>
+
+<ImageLightbox
+  items={lightboxItems}
+  index={selectedPhotoIndex}
+  onClose={() => (selectedPhotoIndex = null)}
+  onIndexChange={(i) => (selectedPhotoIndex = i)}
+  label="Photography series viewer"
+  fallbackSrc={FALLBACK_IMAGE}
+  exif={lightboxExif}
+/>

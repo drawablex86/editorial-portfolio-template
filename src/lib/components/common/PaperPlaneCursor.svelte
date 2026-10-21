@@ -32,6 +32,8 @@
   let isPointerDown = $state(false);
   let isHidden = $state(true);
   let isTouchDevice = $state(false);
+  // Reduced motion: skip the custom cursor entirely — CSS restores the native one
+  let prefersReducedMotion = $state(false);
 
   // RAF loop management: automatically sleeps when idle to save CPU/battery
   let isRafRunning = false;
@@ -312,6 +314,10 @@
     isTouchDevice = !window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     if (isTouchDevice) return;
 
+    // Respect prefers-reduced-motion: keep the native cursor, no RAF loop
+    prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
     if (canvasRef) {
       canvasRef.width = window.innerWidth;
       canvasRef.height = window.innerHeight;
@@ -337,7 +343,7 @@
   });
 </script>
 
-{#if !isTouchDevice}
+{#if !isTouchDevice && !prefersReducedMotion}
   <canvas
     bind:this={canvasRef}
     class="fixed inset-0 pointer-events-none z-[9999] select-none"

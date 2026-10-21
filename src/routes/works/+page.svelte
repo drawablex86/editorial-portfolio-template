@@ -44,8 +44,8 @@
 </script>
 
 <SEOHead
-  title="Works — Archive of Systems &amp; Architecture"
-  description="Unified archive of systems architecture, kernel engineering, documentary photography, and technical schematics by Linus Torvalds."
+  title="Works — Archive of Creative Practice"
+  description="Unified archive of design systems, product architecture, documentary photography, fine art, and experiments by Linus Torvalds."
 />
 
 <div class="space-y-12 select-none">
@@ -67,7 +67,7 @@
 
       <!-- Quick stats -->
       <div class="text-xs font-mono text-stone-500 shrink-0">
-        <span>{filteredWorks.length} of {works.length} Works</span>
+        <span role="status" aria-live="polite">{filteredWorks.length} of {works.length} Works</span>
       </div>
     </div>
   </header>

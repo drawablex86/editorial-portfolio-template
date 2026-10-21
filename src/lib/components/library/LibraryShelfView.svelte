@@ -3,7 +3,7 @@
   import { page } from '$app/state';
   import { goto } from '$app/navigation';
   import type { LibraryData, BookItem } from '$lib/types';
-  import { LayoutGrid, List, Sparkles, Layers, ChevronLeft, ChevronRight, BookOpen, Quote, ArrowUpDown } from '@lucide/svelte';
+  import { LayoutGrid, List, Sparkles, Layers, ChevronLeft, ChevronRight, BookOpen, Quote, ArrowUpDown, SearchX } from '@lucide/svelte';
   import BookSpine from './BookSpine.svelte';
   import BookDetailModal from './BookDetailModal.svelte';
 
@@ -94,10 +94,10 @@
 
 <div class="space-y-10">
   <!-- Header Bar -->
-  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#E8E6DF] dark:border-[#28243A] pb-6">
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#E8E6DF] dark:border-[#2E2C28] pb-6">
     <div>
-      <div class="flex items-center gap-2 text-xs font-mono tracking-widest uppercase text-stone-600 dark:text-amber-300/80 mb-1">
-        <Sparkles size={14} class="text-amber-500" />
+      <div class="flex items-center gap-2 text-xs font-mono tracking-widest uppercase text-stone-600 dark:text-stone-400 mb-1">
+        <Sparkles size={14} class="text-stone-500 dark:text-stone-400" />
         <span>The Shelf</span>
       </div>
       <h1 class="text-2xl sm:text-4xl font-serif font-medium tracking-tight text-[#2C2B29] dark:text-[#EDE9E1]">
@@ -110,6 +110,17 @@
 
     <!-- Controls: Search, Sort & Mode Switcher -->
     <div class="flex flex-wrap items-center gap-3">
+      <!-- Live result count for assistive tech -->
+      <p
+        role="status"
+        aria-live="polite"
+        class="text-[11px] font-mono text-stone-500 dark:text-stone-400 order-last w-full sm:order-none sm:w-auto"
+      >
+        {filteredBooks.length === books.length
+          ? `${books.length} volumes`
+          : `${filteredBooks.length} of ${books.length} volumes`}
+      </p>
+
       <!-- Search Input -->
       <div class="relative min-w-[170px] sm:min-w-[190px]">
         <input
@@ -117,7 +128,7 @@
           aria-label="Search books by title or author"
           placeholder="Search title or author..."
           bind:value={searchQuery}
-          class="w-full px-3 py-1.5 text-xs font-sans bg-white/70 dark:bg-[#1D192B]/80 border border-stone-300 dark:border-stone-700 rounded-md text-[#2C2B29] dark:text-[#EDE9E1] placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+          class="w-full px-3 py-1.5 text-xs font-sans bg-white/70 dark:bg-[#242320] border border-stone-300 dark:border-stone-700 rounded-md text-[#2C2B29] dark:text-[#EDE9E1] placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-[#2C2B29] dark:focus:ring-[#EDE9E1]"
         />
       </div>
 
@@ -126,7 +137,7 @@
         <select
           aria-label="Sort books by"
           bind:value={sortBy}
-          class="px-2.5 py-1.5 text-xs font-sans bg-white/70 dark:bg-[#1D192B]/80 border border-stone-300 dark:border-stone-700 rounded-md text-[#2C2B29] dark:text-[#EDE9E1] focus:outline-none focus:ring-2 focus:ring-amber-500/50 cursor-pointer"
+          class="px-2.5 py-1.5 text-xs font-sans bg-white/70 dark:bg-[#242320] border border-stone-300 dark:border-stone-700 rounded-md text-[#2C2B29] dark:text-[#EDE9E1] focus:outline-none focus:ring-2 focus:ring-[#2C2B29] dark:focus:ring-[#EDE9E1] cursor-pointer"
         >
           <option value="curated">Curated Order</option>
           <option value="rating">Highest Rated</option>
@@ -139,7 +150,7 @@
       <div
         role="group"
         aria-label="Library display mode"
-        class="flex items-center p-1 bg-stone-200/70 dark:bg-[#1B1728] border border-stone-300 dark:border-stone-800 rounded-lg"
+        class="flex items-center p-1 bg-stone-200/70 dark:bg-[#242320] border border-stone-300 dark:border-stone-800 rounded-lg"
       >
         <button
           onclick={() => (viewMode = 'shelf')}
@@ -182,8 +193,8 @@
   {#if !searchQuery.trim() && spotlightBooks.length > 0}
     <section class="space-y-2.5 pt-1">
       <div class="flex items-center justify-between">
-        <h2 class="text-xs font-mono uppercase tracking-widest text-stone-500 dark:text-amber-300/80 flex items-center gap-2">
-          <BookOpen size={13} class="text-amber-600 dark:text-amber-400" />
+        <h2 class="text-xs font-mono uppercase tracking-widest text-stone-500 dark:text-stone-400 flex items-center gap-2">
+          <BookOpen size={13} class="text-stone-600 dark:text-stone-400" />
           <span>On top of my mind</span>
         </h2>
         <span class="text-[11px] font-mono text-stone-400 dark:text-stone-500 hidden sm:inline">Currently occupying thought</span>
@@ -195,10 +206,10 @@
           <button
             type="button"
             onclick={() => openBook(book)}
-            class="relative w-20 aspect-[2/3] shrink-0 rounded-r-xs overflow-hidden shadow-md border-l-[3px] border-stone-800/60 active:scale-95 transition-transform cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-500"
+            class="relative w-20 aspect-[2/3] shrink-0 rounded-r-xs overflow-hidden shadow-md border-l-[3px] border-stone-800/60 active:scale-95 transition-transform cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2C2B29] dark:focus:ring-[#EDE9E1]"
             aria-label="View spotlight book: {book.title} by {book.author}"
           >
-            <img src={book.coverUrl} alt={book.title} class="w-full h-full object-cover" />
+            <img src={book.coverUrl} alt={book.title} class="w-full h-full object-cover" loading="lazy" decoding="async" />
             <div class="absolute inset-0 bg-gradient-to-tr from-black/20 via-transparent to-white/10 pointer-events-none"></div>
           </button>
         {/each}
@@ -217,17 +228,17 @@
                 openBook(book);
               }
             }}
-            class="group p-5 rounded-xl bg-white/60 dark:bg-[#1A1826]/70 border border-stone-300/70 dark:border-stone-800 hover:border-amber-500/40 hover:shadow-md transition-all cursor-pointer flex gap-5 items-start text-left"
+            class="group p-5 rounded-xl bg-white/60 dark:bg-[#1C1B19]/70 border border-stone-300/70 dark:border-stone-800 hover:border-stone-500/40 hover:shadow-md transition-all cursor-pointer flex gap-5 items-start text-left"
           >
             <!-- Miniature Cover with shadow -->
             <div class="relative w-20 sm:w-24 aspect-[2/3] shrink-0 rounded-r-xs overflow-hidden shadow-lg border-l-2 border-stone-800/40 group-hover:scale-102 transition-transform">
-              <img src={book.coverUrl} alt={book.title} class="w-full h-full object-cover" />
+              <img src={book.coverUrl} alt={book.title} class="w-full h-full object-cover" loading="lazy" decoding="async" />
             </div>
 
             <!-- Content Details -->
             <div class="flex-1 min-w-0 space-y-2">
               <div class="flex items-center gap-2">
-                <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/20">
+                <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-stone-500/10 text-stone-700 dark:text-stone-300 border border-stone-500/20">
                   Spotlight
                 </span>
                 {#if book.publishYear}
@@ -237,7 +248,7 @@
                 {/if}
               </div>
 
-              <h3 class="text-base sm:text-lg font-serif font-medium text-[#2C2B29] dark:text-[#EDE9E1] group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors leading-snug">
+              <h3 class="text-base sm:text-lg font-serif font-medium text-[#2C2B29] dark:text-[#EDE9E1] group-hover:text-stone-500 dark:group-hover:text-stone-400 transition-colors leading-snug">
                 {book.title}
               </h3>
               <p class="text-xs font-sans text-stone-500 dark:text-stone-400">
@@ -246,7 +257,7 @@
 
               {#if book.quoteSnippet}
                 <div class="pt-1.5 flex gap-1.5 items-start">
-                  <Quote size={12} class="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                  <Quote size={12} class="text-stone-500 dark:text-stone-400 shrink-0 mt-0.5" />
                   <p class="text-xs font-serif italic text-stone-600 dark:text-stone-300 line-clamp-2 leading-relaxed">
                     &ldquo;{book.quoteSnippet}&rdquo;
                   </p>
@@ -264,13 +275,28 @@
   {/if}
 
   <!-- Shelf Canvas -->
-  {#if viewMode !== 'list'}
+  {#if filteredBooks.length === 0}
+    <div class="py-20 text-center rounded-2xl border border-dashed border-[#E8E6DF] dark:border-[#2E2C28] bg-[#EFECE6]/40 dark:bg-[#181716]/40">
+      <SearchX class="w-10 h-10 mx-auto text-stone-400 mb-3" />
+      <h3 class="text-lg font-serif text-[#2C2B29] dark:text-[#EDE9E1]">No volumes match that search</h3>
+      <p class="text-sm font-sans text-stone-500 mt-1 max-w-md mx-auto">
+        Nothing on the shelf matches &ldquo;{searchQuery}&rdquo;. Try a different title or author.
+      </p>
+      <button
+        type="button"
+        onclick={() => (searchQuery = '')}
+        class="mt-5 px-4 py-2 rounded-lg bg-[#2C2B29] dark:bg-[#EDE9E1] text-[#F4F2ED] dark:text-[#141312] text-xs font-mono hover:opacity-90 transition-opacity cursor-pointer"
+      >
+        Clear search
+      </button>
+    </div>
+  {:else if viewMode !== 'list'}
     <!-- Desktop 3D Wooden Shelves -->
     <div class="hidden md:flex flex-col gap-14 lg:gap-16 py-2">
       {#each [shelf1, shelf2, shelf3] as shelfBooks, shelfIdx}
         <div class="relative group/shelf">
           {#if viewMode === 'cover' && shelfBooks.length > 3}
-            <div class="absolute top-1/2 -translate-y-1/2 inset-x-0 -mx-5 flex justify-between pointer-events-none z-30 opacity-0 group-hover/shelf:opacity-100 transition-opacity duration-200">
+            <div class="absolute top-1/2 -translate-y-1/2 inset-x-0 -mx-5 flex justify-between pointer-events-none z-30 opacity-0 group-hover/shelf:opacity-100 focus-within:opacity-100 transition-opacity duration-200">
               <button
                 onclick={() => scrollShelf(shelfIdx, 'left')}
                 class="pointer-events-auto p-2 rounded-full bg-white/90 dark:bg-stone-800/90 shadow-lg text-stone-700 dark:text-stone-200 hover:scale-110 transition-transform cursor-pointer border border-stone-200 dark:border-stone-700"
@@ -315,7 +341,7 @@
                     class="relative w-36 lg:w-44 aspect-[2/3] rounded-r-xs bg-stone-900 border-l-[7px] border-stone-950 shadow-[8px_14px_24px_rgba(0,0,0,0.45),-3px_0px_6px_rgba(0,0,0,0.25)] overflow-hidden"
                     style="transform: perspective(900px) rotateX(3deg) rotateY(-3deg); transform-origin: bottom center;"
                   >
-                    <img src={book.coverUrl} alt={book.title} class="w-full h-full object-cover" />
+                    <img src={book.coverUrl} alt={book.title} class="w-full h-full object-cover" loading="lazy" decoding="async" />
                     <div class="absolute top-0 bottom-0 left-2.5 w-[2px] bg-black/40 pointer-events-none"></div>
                     <div class="absolute inset-0 bg-gradient-to-tr from-black/30 via-transparent to-white/20 pointer-events-none"></div>
                   </div>
@@ -327,9 +353,9 @@
 
           <!-- Realistic Shelf Wood Board -->
           <div class="relative w-full shadow-2xl rounded-xs">
-            <div class="w-full h-3 bg-[#D4C5B0] dark:bg-[#201C2B] border-t border-white/40 dark:border-amber-300/20 shadow-inner"></div>
+            <div class="w-full h-3 bg-[#D4C5B0] dark:bg-[#242320] border-t border-white/40 dark:border-stone-700/40 shadow-inner"></div>
             <div class="w-full h-7 border-t border-white/30 border-b border-black/40 shadow-lg relative bg-amber-950/20 dark:bg-black/60">
-              <div class="absolute top-0 inset-x-0 h-[1px] bg-white/40 dark:bg-amber-300/40"></div>
+              <div class="absolute top-0 inset-x-0 h-[1px] bg-white/40 dark:bg-stone-700/50"></div>
             </div>
             <div class="w-full h-10 bg-gradient-to-b from-black/35 via-black/15 to-transparent pointer-events-none"></div>
           </div>
@@ -353,7 +379,7 @@
           class="group relative bg-white/50 dark:bg-stone-900/70 p-2.5 rounded-lg border border-stone-300/60 dark:border-stone-800 shadow-xs cursor-pointer flex flex-col justify-between"
         >
           <div class="relative w-full aspect-[2/3] rounded overflow-hidden shadow-md mb-2">
-            <img src={book.coverUrl} alt={book.title} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+            <img src={book.coverUrl} alt={book.title} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" decoding="async" />
           </div>
           <div>
             <h4 class="text-xs font-serif font-medium line-clamp-1 leading-snug text-[#2C2B29] dark:text-[#EDE9E1]">
@@ -368,7 +394,7 @@
     </div>
   {:else}
     <!-- Index Table -->
-    <div class="w-full overflow-x-auto rounded-lg border border-stone-300 dark:border-stone-800 bg-white/60 dark:bg-[#181526]/70 backdrop-blur-sm shadow-md">
+    <div class="w-full overflow-x-auto rounded-lg border border-stone-300 dark:border-stone-800 bg-white/60 dark:bg-[#1C1B19]/70 backdrop-blur-sm shadow-md">
       <table class="w-full text-left text-xs font-sans border-collapse">
         <thead>
           <tr class="border-b border-stone-300 dark:border-stone-800 bg-stone-100/80 dark:bg-stone-900/80 font-mono text-[11px] uppercase tracking-wider text-stone-500 dark:text-stone-400">
@@ -383,7 +409,15 @@
           {#each filteredBooks as book (book.id)}
             <tr
               onclick={() => openBook(book)}
-              class="hover:bg-amber-500/5 transition-colors cursor-pointer group"
+              onkeydown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  openBook(book);
+                }
+              }}
+              tabindex="0"
+              aria-label="{book.title} by {book.author} — open details"
+              class="hover:bg-stone-500/5 focus-visible:bg-stone-500/10 focus:outline-none transition-colors cursor-pointer group"
             >
               <td class="py-3 px-4 font-serif text-sm font-medium text-[#2C2B29] dark:text-[#EDE9E1]">
                 {book.title}
@@ -391,7 +425,7 @@
               <td class="py-3 px-4 text-stone-600 dark:text-stone-300">
                 {book.author}
               </td>
-              <td class="py-3 px-4 font-mono text-amber-600 dark:text-amber-400">
+              <td class="py-3 px-4 font-mono text-stone-600 dark:text-stone-400">
                 {'★'.repeat(book.rating || 5)}
               </td>
               <td class="py-3 px-4 font-mono text-stone-600 dark:text-stone-400">

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { page } from '$app/state';
   import { ArrowLeft, ArrowRight, Shuffle, Check, Copy } from '@lucide/svelte';
   import MarkdownRenderer from '$lib/components/common/MarkdownRenderer.svelte';
   import SEOHead from '$lib/components/common/SEOHead.svelte';
@@ -23,11 +24,20 @@
       ? allPosts[(currentIndex + 1) % allPosts.length]
       : null
   );
+  let prevPost = $derived(
+    currentIndex > 0 && allPosts.length > 1 ? allPosts[currentIndex - 1] : null
+  );
 
+  // Serendipitous read: pick deterministically from the current slug so the
+  // suggestion is stable across re-renders (Math.random() in $derived re-rolls
+  // on every recomputation and changes the link under the user).
   let randomOtherPost = $derived.by(() => {
     if (allPosts.length <= 1) return null;
     const others = allPosts.filter((p: { id: string }) => p.id !== post.id);
-    return others[Math.floor(Math.random() * others.length)] || null;
+    if (others.length === 0) return null;
+    let seed = 0;
+    for (let i = 0; i < post.id.length; i++) seed = (seed * 31 + post.id.charCodeAt(i)) >>> 0;
+    return others[seed % others.length] || null;
   });
 
   function updateScrollProgress() {
@@ -44,7 +54,8 @@
   }
 
   async function copyCitation() {
-    const citation = `Linus Torvalds. "${post.title}." Systems Notes${post.year ? ` (${post.year})` : ''}. ${typeof window !== 'undefined' ? window.location.href : ''}`;
+    const authorName = page.data?.seoSettings?.author?.name || 'Linus Torvalds';
+    const citation = `${authorName}. "${post.title}." Studio Notes${post.year ? ` (${post.year})` : ''}. ${typeof window !== 'undefined' ? window.location.href : ''}`;
     try {
       await navigator.clipboard.writeText(citation);
       isCopied = true;
@@ -146,7 +157,7 @@
       >
         {#if isCopied}
           <Check size={12} class="text-emerald-600 dark:text-emerald-400" />
-          <span class="text-emerald-700 dark:text-emerald-300">Citation Copied</span>
+          <span role="status" aria-live="polite" class="text-emerald-700 dark:text-emerald-300">Citation Copied</span>
         {:else}
           <Copy size={12} />
           <span>Cite Fragment</span>
@@ -166,6 +177,8 @@
       <MarkdownRenderer
         content={post.body}
         className="editorial-prose mx-auto"
+        toc
+        tocTitle="In This Essay"
       />
     </div>
   {/if}
@@ -175,7 +188,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs font-mono text-stone-500 dark:text-stone-400">
       <div>
         <p class="font-medium text-stone-700 dark:text-stone-300">Published in Systems Notes</p>
-        <p class="mt-0.5 font-serif italic text-stone-500">Observational essays &amp; studio notes by Linus Torvalds</p>
+        <p class="mt-0.5 font-serif italic text-stone-500">Observational essays &amp; studio notes by {page.data?.seoSettings?.author?.name || 'Linus Torvalds'}</p>
       </div>
       <a
         href="/blog"
@@ -186,8 +199,24 @@
       </a>
     </div>
 
-    <!-- Next & Random Navigation Matrix -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-[#E8E6DF]/60 dark:border-[#2E2C28]">
+    <!-- Prev / Next / Random Navigation Matrix -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-[#E8E6DF]/60 dark:border-[#2E2C28]">
+      {#if prevPost}
+        <a
+          href="/blog/{prevPost.id}"
+          rel="prev"
+          class="group p-4 rounded border border-[#E8E6DF] dark:border-[#2E2C28] bg-[#FAF9F5]/50 dark:bg-[#1C1B19]/50 hover:bg-[#FAF9F5] dark:hover:bg-[#1C1B19] hover:border-stone-400 dark:hover:border-stone-600 transition-all space-y-1 block cursor-pointer"
+        >
+          <div class="flex items-center justify-between text-[10px] font-mono uppercase tracking-widest text-stone-500 dark:text-stone-400">
+            <ArrowLeft size={12} class="group-hover:-translate-x-1 transition-transform" />
+            <span>Previous Essay</span>
+          </div>
+          <div class="font-serif font-medium text-base text-[#2C2B29] dark:text-[#EDE9E1] group-hover:text-stone-900 dark:group-hover:text-white line-clamp-1">
+            {prevPost.title}
+          </div>
+        </a>
+      {/if}
+
       {#if nextPost}
         <a
           href="/blog/{nextPost.id}"

@@ -9,6 +9,10 @@ build
 .next
 /chrome
 /lighthouse-reports
+# Lighthouse runner output: regenerated on every audit.
+/reports
+# Local Chrome-for-Testing download used by `npm run audit`.
+/.chrome
 .DS_Store
 *.DS_Store
 *.log

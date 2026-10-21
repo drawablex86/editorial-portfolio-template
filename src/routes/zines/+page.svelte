@@ -1,16 +1,10 @@
 <script lang="ts">
   import SEOHead from '$lib/components/common/SEOHead.svelte';
+  import Image from '$lib/components/common/Image.svelte';
   import { BookOpen, Sparkles, Layers, ArrowRight, ShieldCheck, Printer } from '@lucide/svelte';
 
   let { data } = $props();
   let zines = $derived(data.zines || []);
-  let activeFilter = $state<string>('all');
-
-  let filteredZines = $derived(
-    activeFilter === 'all'
-      ? zines
-      : zines.filter((z) => z.texture === activeFilter || z.binding === activeFilter)
-  );
 </script>
 
 <SEOHead
@@ -18,7 +12,7 @@
   description="Tactile editorial publications, visual essays, risograph zines, and sketchbooks in an interactive flip-book format."
 />
 
-<div class="min-h-screen pt-28 pb-24 px-4 sm:px-6 md:px-12 max-w-7xl mx-auto">
+<div class="min-h-screen pt-4 pb-24 px-4 sm:px-6 md:px-12 max-w-7xl mx-auto">
   <!-- Editorial Header -->
   <header class="mb-14 max-w-3xl">
     <div class="flex items-center gap-2 mb-3">
@@ -60,7 +54,7 @@
   {:else}
     <!-- The Magazine Stand Shelf Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10">
-      {#each filteredZines as zine}
+      {#each zines as zine}
         <a
           href="/zines/{zine.id}"
           class="group relative flex flex-col focus:outline-none focus:ring-2 focus:ring-[#2C2B29] rounded-xl transition-all"
@@ -77,11 +71,13 @@
             <div class="absolute inset-y-0 left-4 w-4 bg-gradient-to-r from-black/15 to-transparent pointer-events-none z-10"></div>
 
             <!-- Cover Image -->
-            <img
+            <Image
               src={zine.coverSrc}
               alt={zine.title}
+              sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw"
+              width={1200}
+              fallbackSrc="/images/inspiration_cosmology.webp"
               class="w-full h-full object-contain filter drop-shadow-md group-hover:scale-102 transition-transform duration-500"
-              loading="lazy"
             />
 
             <!-- Page Count Badge -->

@@ -17,11 +17,20 @@
 
   let { data } = $props();
 
-  let frontmatter = $state<Record<string, any>>(JSON.parse(JSON.stringify(data.data || {})));
-  let bodyContent = $state(data.content || '');
+  let frontmatter = $state<Record<string, any>>({});
+  let bodyContent = $state('');
 
-  let nodes = $state<any[]>(Array.isArray(frontmatter.nodes) ? frontmatter.nodes : []);
+  let nodes = $state<any[]>([]);
   let selectedNodeId = $state<string | number | null>(null);
+
+  $effect(() => {
+    const dataObj = JSON.parse(JSON.stringify(data.data || {}));
+    frontmatter = dataObj;
+    bodyContent = data.content || '';
+    if (nodes.length === 0 && Array.isArray(dataObj.nodes)) {
+      nodes = dataObj.nodes;
+    }
+  });
 
   let isSaving = $state(false);
   let saveSuccess = $state(false);
@@ -235,6 +244,14 @@
       <div
         bind:this={canvasRef}
         onclick={handleCanvasClick}
+        onkeydown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            addNode(50, 50);
+          }
+        }}
+        role="button"
+        tabindex="0"
+        aria-label="Interactive cosmology pin canvas. Click to place a new influence pin."
         class="relative w-full aspect-[16/9] max-h-full max-w-5xl rounded-lg shadow-2xl overflow-hidden cursor-crosshair border border-[#2E2C28]"
       >
         <!-- Background Archival Plate Image -->
@@ -268,10 +285,19 @@
           <div
             style="left: {node.x}%; top: {node.y}%;"
             class="absolute -translate-x-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing z-20 group"
+            role="button"
+            tabindex="0"
+            aria-label="Pin {node.title || 'node'}"
             onmousedown={(e) => startDrag(e, node.id)}
             onclick={(e) => {
               e.stopPropagation();
               selectNode(node.id);
+            }}
+            onkeydown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.stopPropagation();
+                selectNode(node.id);
+              }
             }}
           >
             <div class="relative flex items-center justify-center">
@@ -331,8 +357,9 @@
         {#if selectedNode}
           <div class="space-y-4">
             <div class="space-y-1">
-              <label class="text-xs font-mono text-stone-600 block">Title / Name</label>
+              <label for="influence-title" class="text-xs font-mono text-stone-600 block">Title / Name</label>
               <input
+                id="influence-title"
                 type="text"
                 bind:value={selectedNode.title}
                 class="w-full bg-white border border-[#DDD9CE] rounded px-3 py-1.5 text-xs text-stone-900 focus:outline-none focus:border-stone-500 font-medium"
@@ -340,8 +367,9 @@
             </div>
 
             <div class="space-y-1">
-              <label class="text-xs font-mono text-stone-600 block">Category / Discipline</label>
+              <label for="influence-category" class="text-xs font-mono text-stone-600 block">Category / Discipline</label>
               <input
+                id="influence-category"
                 type="text"
                 bind:value={selectedNode.category}
                 class="w-full bg-white border border-[#DDD9CE] rounded px-3 py-1.5 text-xs text-stone-900 focus:outline-none focus:border-stone-500"
@@ -352,10 +380,11 @@
             <div class="grid grid-cols-2 gap-3 p-3 bg-[#EFECE6] rounded border border-[#E2DED4]">
               <div class="space-y-1">
                 <div class="flex justify-between text-[11px] font-mono text-stone-600">
-                  <span>X Position</span>
+                  <label for="influence-x">X Position</label>
                   <span class="font-bold text-stone-800">{selectedNode.x}%</span>
                 </div>
                 <input
+                  id="influence-x"
                   type="range"
                   min="2"
                   max="98"
@@ -366,10 +395,11 @@
 
               <div class="space-y-1">
                 <div class="flex justify-between text-[11px] font-mono text-stone-600">
-                  <span>Y Position</span>
+                  <label for="influence-y">Y Position</label>
                   <span class="font-bold text-stone-800">{selectedNode.y}%</span>
                 </div>
                 <input
+                  id="influence-y"
                   type="range"
                   min="2"
                   max="98"
@@ -380,8 +410,9 @@
             </div>
 
             <div class="space-y-1">
-              <label class="text-xs font-mono text-stone-600 block">Quotation / Insight Excerpt</label>
+              <label for="influence-quote" class="text-xs font-mono text-stone-600 block">Quotation / Insight Excerpt</label>
               <textarea
+                id="influence-quote"
                 bind:value={selectedNode.quote}
                 rows={3}
                 class="w-full bg-white border border-[#DDD9CE] rounded px-3 py-1.5 text-xs text-stone-900 focus:outline-none focus:border-stone-500 font-serif leading-relaxed resize-none"

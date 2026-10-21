@@ -1,8 +1,13 @@
-# 🏛️ Minimalist Editorial Portfolio & Spatial Studio Engine (v1.0 Release)
+# 🏛️ Rahul Rajeev — Sovereign Editorial Portfolio & Spatial Studio Suite
 
-An artisanal, high-performance portfolio, digital garden, and spatial studio suite engineered with **SvelteKit 2**, **Svelte 5 (Runes)**, **Vite 6**, and **Tailwind CSS v4**.
+The official personal portfolio, digital garden, and spatial studio suite of **Rahul Rajeev**, engineered with **SvelteKit 2**, **Svelte 5 (Runes)**, **Vite 6**, and **Tailwind CSS v4**.
 
 Designed around a warm stone editorial aesthetic (`#F4F2ED`), tactile physics, 3D spatial workstations, in-browser CMS authoring, and an automated adversarial AI-deterrence media pipeline.
+
+> [!NOTE]
+> **Open-Source Edition**:
+> The public, de-identified open-source template variant of this engine is maintained separately at:  
+> [`https://github.com/drawablex86/editorial-portfolio-template`](https://github.com/drawablex86/editorial-portfolio-template)
 
 ---
 
@@ -10,7 +15,7 @@ Designed around a warm stone editorial aesthetic (`#F4F2ED`), tactile physics, 3
 
 1. [Overview & Highlights](#1-overview--highlights)
 2. [Quick Start & Prerequisites](#2-quick-start--prerequisites)
-3. [The 10-Minute Personalization Checklist](#3-the-10-minute-personalization-checklist)
+3. [Dual-Repository Architecture](#3-dual-repository-architecture)
 4. [Public Portals & Spatial Experiences](#4-public-portals--spatial-experiences)
 5. [The Studio CMS Suite (`/studio`)](#5-the-studio-cms-suite-studio)
 6. [Content Archetypes & Frontmatter Guide](#6-content-archetypes--frontmatter-guide)
@@ -78,65 +83,35 @@ node scripts/verify-security.mjs # Run security & defensive audit suite
 
 ---
 
-## 3. The 10-Minute Personalization Checklist
+## 3. Dual-Repository Architecture
 
-Follow this checklist to transform the starter template into your personal portfolio:
+This project is separated into two repositories to preserve absolute privacy while enabling seamless open-source contributions:
 
-### Step 1: Site Identity & SEO (`content/settings/seo.json`)
-- [ ] Open `content/settings/seo.json`.
-- [ ] Update `siteTitle`, `titleTemplate`, and `defaultDescription`.
-- [ ] Update `siteUrl` to your production domain (e.g. `https://yourname.com`).
-- [ ] Update `author` details (`name`, `jobTitle`, `location`, `bio`, `url`, `sameAs` social links).
-- [ ] Update `twitterHandle`.
+| Repository | GitHub Remote | Local Working Path | Role |
+| :--- | :--- | :--- | :--- |
+| **Private Portfolio** | `drawablex86/portfolio2026` | `/Users/rahulrajeev/Downloads/portfolio` | Personal essays, original artwork, residency zines, photos, and domain deployment. |
+| **Public Template** | `drawablex86/editorial-portfolio-template` | `/Users/rahulrajeev/Downloads/editorial-portfolio-template` | Clean, open-source SvelteKit 2 + Svelte 5 engine with dummy content and generic storage UX. |
 
-### Step 2: Replace Avatar & OG Image (`static/images/avatar.webp`)
-- [ ] Place your square profile portrait or avatar into `static/images/avatar.webp`.
-- [ ] Ensure image resolution is at least 600×600 pixels.
+### How to Safely Backport Features to the Open-Source Template
+When developing new features (e.g. Studio CMS tools, layout archetypes, bug fixes) in this private repository and transferring them to the open-source template:
 
-### Step 3: Bio & Current Focus (`content/pages/`)
-- [ ] **About Page** (`content/pages/about.md`):
-  - [ ] Edit the long-form narrative bio.
-  - [ ] Update your working `principles` and `disciplines`.
-  - [ ] Update social links (`socialLinks`).
-- [ ] **Now Page** (`content/pages/now.md`):
-  - [ ] Edit what you are currently building, reading, and exploring.
-  - [ ] Update your current quote.
-
-### Step 4: Add Your Works & Projects (`content/projects/`)
-- [ ] Browse the sample projects in `content/projects/`:
-  - `git-content-tracker.md` (Product Design archetype)
-  - `linux-vfs-subsystem.md` (Case Study archetype)
-  - `nordic-hardware-optics.md` (Photography Album archetype)
-  - `microprocessor-schematics.md` (Illustration archetype)
-  - `micro-bench-engine.md` (Experiment archetype)
-- [ ] Add your project Markdown files with appropriate frontmatter (`title`, `year`, `tags`, `projectType`, `thumbnailSrc`, `gallery`).
-- [ ] Update display order in `content/settings/portfolio-order.json`.
-
-### Step 5: Add Your Writing & Essays (`content/blog/`)
-- [ ] Add your essays into `content/blog/*.md`.
-- [ ] Include frontmatter: `title`, `year`, `tags`, `description`, `thumbnailSrc`.
-- [ ] Use custom editorial directives (`:::quote[...]`, `:::figure[...]`, `:::metrics`, `:::note[...]`).
-
-### Step 6: Customize 3D Desk & Inspiration Moodboard
-- [ ] **3D Desk Plates** (`content/desk/desk.md`): Add titles, captions, and images for plates placed on your workshop mat.
-- [ ] **Inspiration Constellation** (`content/inspiration.md`): Add 8–12 thinkers, mentors, or concepts with `(x, y)` percentages (0–100) to plot them spatially on the darkroom canvas.
-
-### Step 7: Curate Your Library (`content/library.json`)
-- [ ] Update `currentlyReading` and `books` in `content/library.json`.
-- [ ] Set custom foil accents (`gold`, `silver`, `copper`) and hex spine colors.
-- [ ] *(Optional)* Sync from Goodreads RSS via `npm run sync:goodreads`.
-
-### Step 8: Zines & Reading Room (`content/zines/`)
-- [ ] Define zine metadata in `content/zines/*.json`.
-- [ ] Add high-resolution page WebPs to `static/zines/<zine-slug>/page-01.webp`, etc.
-
-### Step 9: AI Deterrence & TDM Rights Notice
-- [ ] Review `content/settings/tdm-policy.md` and set your licensing email.
-- [ ] Check `content/settings/pipeline.json` to configure an optional external SSD vault path or keep local `.pipeline-vault`.
-
-### Step 10: Verify & Deploy
-- [ ] Run `npm run check && npm run build` to confirm zero errors.
-- [ ] Deploy to your host of choice (see [Section 10](#10-deployment--production-build)).
+1. **Copy Engine Code Only (Never Content)**:
+   Sync modified components, routes, or scripts from `src/` or `scripts/`:
+   ```bash
+   rsync -av src/lib/components/studio/ ../editorial-portfolio-template/src/lib/components/studio/
+   ```
+2. **Run Pre-Flight Privacy Audit**:
+   Verify that no personal strings, names, or regional references are present in `editorial-portfolio-template`:
+   ```bash
+   cd ../editorial-portfolio-template
+   git grep -i -E "rahul|rajeev|mumbai|kerala|whole fragments|slowvv|as-we-are-humans" src/
+   ```
+3. **Verify and Push Upstream**:
+   ```bash
+   npm run check && npm run build
+   git commit -am "feat: <feature-description>"
+   git push origin main
+   ```
 
 ---
 

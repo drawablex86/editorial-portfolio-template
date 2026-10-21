@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { ProjectItem } from '$lib/types';
+  import Image from '$lib/components/common/Image.svelte';
   import { ArrowUpRight } from '@lucide/svelte';
 
   const FALLBACK_IMAGE = "/images/inspiration_cosmology.webp";
@@ -49,10 +50,12 @@
     >
       <div class="space-y-2.5">
         <div class="w-full aspect-[16/10] bg-[#EAE7DF] dark:bg-[#141312] rounded-xl overflow-hidden relative border border-[#E8E6DF]/60 dark:border-[#2E2C28]">
-          <img
+          <Image
             src={hoveredProject.thumbnailSrc || (hoveredProject.gallery && hoveredProject.gallery.length > 0 ? hoveredProject.gallery[0] : FALLBACK_IMAGE)}
             alt={hoveredProject.title}
-            onerror={(e) => { (e.currentTarget as HTMLImageElement).src = FALLBACK_IMAGE; }}
+            sizes="288px"
+            width={1200}
+            fallbackSrc={FALLBACK_IMAGE}
             class="w-full h-full object-cover"
           />
         </div>

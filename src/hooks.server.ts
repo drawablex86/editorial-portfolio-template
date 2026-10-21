@@ -113,10 +113,15 @@ export const handle: Handle = async ({ event, resolve }) => {
 		response.headers.set('X-Robots-Tag', 'noai, noimageai');
 	}
 
-	// Cache-Control for images and static assets
-	if (pathname.startsWith('/images/') || pathname.endsWith('.svg') || pathname.endsWith('.webp')) {
-		response.headers.set('Cache-Control', 'public, max-age=31536000, immutable');
-	}
+	// Cache-Control for static assets is NOT set here.
+	//
+	// `handle` is not invoked for files served out of `static/` or for Vite's
+	// hashed `/_app/immutable/*` bundles — verified against a production build,
+	// where a probe at the top of this function fired for `/` but never for
+	// `/images/*`. `resolve()` also exposes no `setHeaders` option in SvelteKit
+	// 2.70. Asset cache policy therefore lives at the platform layer in
+	// `vercel.json`; see `docs/asset-caching.md` for the per-path rationale and
+	// the deployment checks that still need to be run.
 
 	// Defensive Security Headers
 	response.headers.set('X-Content-Type-Options', 'nosniff');

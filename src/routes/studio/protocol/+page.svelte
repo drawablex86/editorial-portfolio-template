@@ -25,17 +25,27 @@
 
   let { data } = $props();
 
-  let pipelineStatus = $state(data.pipelineStatus);
-  let pipelineConfig = $state(data.pipelineConfig || {});
-  let resolvedVault = $state(data.resolvedVault || {});
+  let pipelineStatus = $state<any>(null);
+  let pipelineConfig = $state<any>({});
+  let resolvedVault = $state<any>({});
   let isModalOpen = $state(false);
   let isRefreshing = $state(false);
 
   // Vault Configuration & First-Time Setup State
-  let customVaultInput = $state(data.pipelineConfig?.vaultPath || '');
+  let customVaultInput = $state('');
   let isSavingVaultConfig = $state(false);
   let saveVaultSuccess = $state(false);
   let saveVaultError = $state<string | null>(null);
+
+  // Sync state when data props change
+  $effect(() => {
+    pipelineStatus = data.pipelineStatus;
+    pipelineConfig = data.pipelineConfig || {};
+    resolvedVault = data.resolvedVault || {};
+    if (!customVaultInput && data.pipelineConfig?.vaultPath) {
+      customVaultInput = data.pipelineConfig.vaultPath;
+    }
+  });
 
   let isRunningSetup = $state(false);
   let setupSuccess = $state(false);
@@ -112,9 +122,10 @@
   }
 
   // Dedicated AI Deterrence State
-  let aiSettings = $state<AiDeterrenceConfig>(
-    JSON.parse(JSON.stringify(data.aiSettings || {}))
-  );
+  let aiSettings = $state<AiDeterrenceConfig>({} as AiDeterrenceConfig);
+  $effect(() => {
+    aiSettings = JSON.parse(JSON.stringify(data.aiSettings || {}));
+  });
   let isSavingAi = $state(false);
   let saveAiSuccess = $state(false);
   let saveAiError = $state<string | null>(null);
@@ -511,10 +522,11 @@
       <div class="space-y-4">
           <div class="space-y-1">
             <div class="flex items-center justify-between">
-              <label class="text-xs font-mono text-stone-600 block">TDM Policy URL Path</label>
+              <label for="tdm-policy-url" class="text-xs font-mono text-stone-600 block">TDM Policy URL Path</label>
               <span class="text-[10px] font-mono text-stone-400">Adapts to active domain automatically</span>
             </div>
             <input
+              id="tdm-policy-url"
               type="text"
               bind:value={aiSettings.tdmPolicyUrl}
               placeholder="/rights"
@@ -523,8 +535,9 @@
           </div>
 
           <div class="space-y-1">
-            <label class="text-xs font-mono text-stone-600 block">Policy Effective Date</label>
+            <label for="tdm-effective-date" class="text-xs font-mono text-stone-600 block">Policy Effective Date</label>
             <input
+              id="tdm-effective-date"
               type="text"
               bind:value={aiSettings.effectiveDate}
               placeholder="October 2026"
@@ -533,8 +546,9 @@
           </div>
 
           <div class="space-y-1">
-            <label class="text-xs font-mono text-stone-600 block">Custom Robots.txt Crawler Exceptions</label>
+            <label for="custom-robots-rules" class="text-xs font-mono text-stone-600 block">Custom Robots.txt Crawler Exceptions</label>
             <textarea
+              id="custom-robots-rules"
               bind:value={aiSettings.customRobotsRules}
               rows={2}
               placeholder="e.g. Disallow: /private-archive/"
@@ -570,7 +584,7 @@
       <div class="pt-6 border-t border-[#EAE6DE] space-y-3">
         <div class="flex items-center justify-between">
           <div class="space-y-0.5">
-            <label class="text-xs font-mono uppercase tracking-wider text-stone-800 font-semibold block">
+            <label for="tdm-policy-content" class="text-xs font-mono uppercase tracking-wider text-stone-800 font-semibold block">
               TDM Policy Document Text (content/settings/tdm-policy.md)
             </label>
             <p class="text-[11px] font-serif text-stone-500">
@@ -581,6 +595,7 @@
         </div>
 
         <textarea
+          id="tdm-policy-content"
           bind:value={aiSettings.tdmPolicyContent}
           rows={14}
           class="w-full bg-[#FAF8F5] border border-[#DDD9CE] rounded-lg p-3 text-xs text-stone-900 font-mono focus:outline-none focus:border-stone-500 resize-y leading-relaxed"

@@ -11,6 +11,7 @@
 
   let isVisible = true;
   let rafId: number | null = null;
+  let reducedMotion = false;
 
   // Interaction tracking (mouse & paper plane wake)
   let mouseX = -1000;
@@ -280,7 +281,7 @@
 
   function renderLoop() {
     if (!isVisible || !ctx || !canvasRef) {
-      rafId = requestAnimationFrame(renderLoop);
+      if (!reducedMotion) rafId = requestAnimationFrame(renderLoop);
       return;
     }
 
@@ -378,7 +379,8 @@
     // Foreground water layer 2
     drawWavePath(waveLayers[2].layerIdx, waveLayers[2].fill, waveLayers[2].stroke);
 
-    rafId = requestAnimationFrame(renderLoop);
+    // Respect prefers-reduced-motion: render one static scene, no loop
+    if (!reducedMotion) rafId = requestAnimationFrame(renderLoop);
   }
 
   function drawWavePath(layerIdx: number, fill: string, stroke: string) {
@@ -410,11 +412,18 @@
   }
 
   onMount(() => {
+    reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     if (canvasRef && containerRef) {
       ctx = canvasRef.getContext('2d');
       updateDimensions();
       boat.y = getWaterSurfaceY(boat.x, 0, 1);
-      rafId = requestAnimationFrame(renderLoop);
+      if (reducedMotion) {
+        isVisible = true;
+        renderLoop();
+      } else {
+        rafId = requestAnimationFrame(renderLoop);
+      }
     }
 
     const resizeObserver = new ResizeObserver(() => {
@@ -437,7 +446,7 @@
   });
 </script>
 
-<!-- HERO CONTAINER: MONSOON VOYAGE (KERALA WATER & ORIGAMI BOAT DIORAMA) -->
+<!-- HERO CONTAINER: MONSOON VOYAGE (BACKWATERS & ORIGAMI BOAT DIORAMA) -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
   bind:this={containerRef}
@@ -466,29 +475,52 @@
     <div class="flex items-center gap-2">
       <span class="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
       <span class="text-xs uppercase tracking-widest font-mono text-stone-600 dark:text-stone-400">
-        Studio &amp; Digital Workspace
+        Linus Torvalds Studio
       </span>
     </div>
 
     <!-- Main Editorial Headline -->
     <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-normal tracking-tight text-[#2C2B29] dark:text-[#EDE9E1] leading-[1.14]">
-      Designing sovereign systems, digital tools, and technical craft.
+      I make images, identities, systems, and stories across art, design, and cultural inquiry.
     </h1>
 
     <!-- Narrative Bio -->
     <p class="text-lg sm:text-xl text-stone-600 dark:text-stone-300 font-serif max-w-2xl leading-relaxed">
-      An independent portfolio and digital garden spanning systems architecture, technical research, photography, and tactile experiments.
+      An independent creative practice spanning visual art, design, photography, writing, and experiments with ideas, technology, and everyday culture.
     </p>
+
+    <!-- Primary Calls to Action -->
+    <div class="flex flex-wrap items-center gap-3 pt-1">
+      <a
+        href="/works"
+        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#2C2B29] dark:bg-[#EDE9E1] text-[#F4F2ED] dark:text-[#141312] text-xs font-mono uppercase tracking-wider hover:opacity-90 transition-opacity shadow-xs"
+      >
+        <span>View Works</span>
+      </a>
+      <a
+        href="/blog"
+        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-[#E8E6DF] dark:border-[#2E2C28] bg-white/70 dark:bg-[#1C1B19]/70 backdrop-blur-xs text-[#2C2B29] dark:text-[#EDE9E1] text-xs font-mono uppercase tracking-wider hover:bg-white dark:hover:bg-[#242320] transition-colors"
+      >
+        <span>Read Writing</span>
+      </a>
+      <a
+        href="/about"
+        class="inline-flex items-center gap-2 px-3 py-2.5 text-xs font-mono uppercase tracking-wider text-stone-600 dark:text-stone-400 hover:text-[#2C2B29] dark:hover:text-[#EDE9E1] transition-colors"
+      >
+        <span>About the Studio</span>
+        <span aria-hidden="true">→</span>
+      </a>
+    </div>
 
     <!-- Contextual Discipline Tags -->
     <div class="pt-2 flex flex-wrap items-center gap-3 sm:gap-4 text-xs font-mono text-stone-500 dark:text-stone-400">
-      <span>Systems Architecture</span>
+      <span>Portland, Oregon Studio</span>
       <span class="text-stone-300 dark:text-stone-700">•</span>
-      <span>Open-Source Craft</span>
+      <span>Fine Art &amp; Oil Studies</span>
       <span class="text-stone-300 dark:text-stone-700">•</span>
-      <span>Technical Research</span>
+      <span>Systems Design</span>
       <span class="text-stone-300 dark:text-stone-700">•</span>
-      <span class="text-stone-400 dark:text-stone-500 italic">Documentary Optics</span>
+      <span class="text-stone-400 dark:text-stone-500 italic">Drifting on Pacific Northwest</span>
     </div>
   </div>
 
@@ -498,6 +530,12 @@
       <span class="inline-block w-1.5 h-1.5 rounded-full bg-stone-300 dark:bg-stone-700"></span>
       <span>Hover or drag near water to ripple · Watch the origami boat navigate the tide</span>
     </div>
-    <span class="hidden sm:inline text-stone-400/80 dark:text-stone-500 italic font-serif">Ambient water surface</span>
+    <a
+      href="#works"
+      class="hidden sm:inline-flex items-center gap-1.5 text-stone-500 dark:text-stone-400 hover:text-[#2C2B29] dark:hover:text-[#EDE9E1] transition-colors normal-case tracking-normal"
+    >
+      <span>Scroll to explore</span>
+      <span aria-hidden="true">↓</span>
+    </a>
   </div>
 </div>

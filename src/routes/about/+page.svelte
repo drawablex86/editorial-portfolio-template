@@ -1,5 +1,7 @@
 <script lang="ts">
+  import { page } from '$app/state';
   import MarkdownRenderer from '$lib/components/common/MarkdownRenderer.svelte';
+  import Image from '$lib/components/common/Image.svelte';
   import { Mail } from '@lucide/svelte';
 
   let { data } = $props();
@@ -42,7 +44,7 @@
         />
       {:else}
         <p class="editorial-prose">
-          Linus is a software architect and systems engineer best known for creating the Linux operating system kernel and the Git distributed version control system.
+          {page.data?.seoSettings?.author?.bio || 'Creator of Linux and Git. Building sovereign, high-performance systems and exploring prime lens optics and hardware architecture.'}
         </p>
       {/if}
 
@@ -56,9 +58,7 @@
               rel={link.url.startsWith('mailto:') ? undefined : 'noopener noreferrer'}
               class="hover:text-[#2C2B29] dark:hover:text-[#EDE9E1] transition-colors flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-[#2C2B29] rounded px-1"
             >
-              {#if link.platform.toLowerCase() === 'whole fragments'}
-                <span class="underline underline-offset-4 font-medium">{link.platform}</span>
-              {:else if link.platform.toLowerCase() === 'email' || link.url.startsWith('mailto:')}
+              {#if link.platform.toLowerCase() === 'email' || link.url.startsWith('mailto:')}
                 <Mail size={15} />
                 <span>{link.platform || 'Email'}</span>
               {:else}
@@ -72,11 +72,13 @@
 
     <!-- Portrait image -->
     <div class="w-full max-w-[260px] mx-auto md:mx-0 aspect-[3/4] bg-[#FAF9F5] dark:bg-[#1C1B19] rounded-xl overflow-hidden shadow-md border border-[#E8E6DF] dark:border-[#2E2C28]">
-      <img
+      <Image
         src={aboutData?.portraitImage || '/images/avatar.webp'}
-        alt="Portrait of Linus Torvalds"
+        alt="Portrait of {page.data?.seoSettings?.author?.name || 'Linus Torvalds'}"
+        sizes="260px"
+        width={800}
+        priority="lcp"
         class="w-full h-full object-cover"
-        loading="lazy"
       />
     </div>
   </div>

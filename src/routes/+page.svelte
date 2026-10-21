@@ -1,11 +1,12 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import StudioDesk3D from '$lib/components/home/StudioDesk3D.svelte';
+  import LazyMount from '$lib/components/common/LazyMount.svelte';
   import HeroWaterVoyage from '$lib/components/home/HeroWaterVoyage.svelte';
   import ArchivalCard from '$lib/components/work/ArchivalCard.svelte';
   import ProjectIndexTable from '$lib/components/work/ProjectIndexTable.svelte';
   import type { ProjectItem } from '$lib/types';
-  import { LayoutGrid, Table, Sparkles, Filter } from '@lucide/svelte';
+  import { LayoutGrid, Table } from '@lucide/svelte';
 
   let { data } = $props();
 
@@ -14,6 +15,19 @@
 
   let projectsData = $derived(data.projectsData ?? []);
   let deskSheets = $derived(data.deskData?.sheets ?? []);
+
+  // Real counts for the discovery strip, so the hub reads as an index of
+  // live content rather than static labels.
+  let blogCount = $derived(data.discoveryCounts?.blog ?? null);
+  let libraryCount = $derived(data.discoveryCounts?.library ?? null);
+  let zineCount = $derived(data.discoveryCounts?.zines ?? null);
+  let nowUpdated = $derived.by(() => {
+    const raw = data.nowUpdated;
+    if (!raw) return null;
+    const parsed = new Date(raw);
+    if (Number.isNaN(parsed.getTime())) return String(raw);
+    return parsed.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+  });
 
   const categories = [
     { key: 'all', label: 'All Disciplines' },
@@ -49,8 +63,8 @@
   ogType="website"
 />
 
-<div class="space-y-20 md:space-y-28 select-none">
-  <!-- 1. HERO SECTION (THE MONSOON VOYAGE: KERALA BACKWATERS & ORIGAMI BOAT) -->
+<div class="space-y-20 md:space-y-28">
+  <!-- 1. HERO SECTION (THE MONSOON VOYAGE: BACKWATERS & ORIGAMI BOAT) -->
   <HeroWaterVoyage />
 
   <!-- 2. STUDIO DESK 3D -->
@@ -59,7 +73,9 @@
       <span>01 / Studio Desk Scene</span>
       <span>Interactive Workspace</span>
     </div>
-    <StudioDesk3D sheets={deskSheets} />
+    <LazyMount minHeight="340px" label="Studio desk scene">
+      <StudioDesk3D sheets={deskSheets} />
+    </LazyMount>
   </section>
 
   <!-- 3. FEATURED WORKS (FOLIO & INDEX VIEW WITH CATEGORY PILLS) -->
@@ -179,7 +195,7 @@
 
     <!-- Bottom Full Archive CTA -->
     <div class="pt-6 border-t border-[#E8E6DF] dark:border-[#2E2C28] flex flex-col sm:flex-row items-center justify-between gap-4">
-      <p class="text-xs font-mono text-stone-500 dark:text-stone-400">
+      <p role="status" aria-live="polite" class="text-xs font-mono text-stone-500 dark:text-stone-400">
         Showing curated selection from the creative archive ({filteredProjects.length} items).
       </p>
       <a
@@ -187,8 +203,42 @@
         class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-[#E8E6DF] dark:border-[#2E2C28] bg-white dark:bg-[#1E1D1B] hover:bg-stone-100 dark:hover:bg-stone-800 text-xs font-mono text-[#2C2B29] dark:text-[#EDE9E1] transition-all hover:scale-[1.02] shadow-2xs"
       >
         <span>Explore Full Works Archive ({projectsData.length})</span>
-        <span class="text-amber-600 dark:text-amber-400">→</span>
+        <span class="text-stone-500 dark:text-stone-400">→</span>
       </a>
+    </div>
+  </section>
+
+  <!-- 4. HUB — PATHS THROUGH THE STUDIO -->
+  <section id="paths" class="space-y-6 pt-2 scroll-mt-24">
+    <div class="flex items-end justify-between border-b border-[#E8E6DF] dark:border-[#2E2C28] pb-5">
+      <div>
+        <h2 class="text-xs font-semibold text-stone-600 dark:text-stone-400 uppercase tracking-widest">
+          03 / Paths Through The Studio
+        </h2>
+        <p class="text-xs sm:text-sm font-serif text-stone-600 dark:text-stone-400 mt-1">
+          Beyond the archive — essays, shelves, print ephemera, and the working present.
+        </p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {#each [
+        { href: '/blog', label: 'Writing', detail: blogCount !== null ? `${blogCount} essays & notes` : 'Essays & cultural criticism' },
+        { href: '/library', label: 'Library', detail: libraryCount !== null ? `${libraryCount} volumes on the shelf` : 'The curated bookshelf' },
+        { href: '/zines', label: 'Zines', detail: zineCount !== null ? `${zineCount} printed editions` : 'Print ephemera & reading room' },
+        { href: '/now', label: 'Now', detail: nowUpdated ? `Updated ${nowUpdated}` : 'What occupies the present' }
+      ] as path}
+        <a
+          href={path.href}
+          class="group rounded-xl border border-[#E8E6DF] dark:border-[#2E2C28] bg-white/60 dark:bg-[#1C1B19]/60 p-5 hover:border-stone-400 dark:hover:border-stone-600 hover:bg-white dark:hover:bg-[#1C1B19] transition-all flex flex-col justify-between gap-6 min-h-[128px]"
+        >
+          <span class="text-base font-serif font-medium text-[#2C2B29] dark:text-[#EDE9E1]">{path.label}</span>
+          <span class="flex items-end justify-between gap-2">
+            <span class="text-xs font-mono text-stone-500 dark:text-stone-400">{path.detail}</span>
+            <span class="text-stone-400 group-hover:translate-x-0.5 transition-transform" aria-hidden="true">→</span>
+          </span>
+        </a>
+      {/each}
     </div>
   </section>
 </div>

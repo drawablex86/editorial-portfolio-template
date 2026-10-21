@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import type { ProjectItem } from '$lib/types';
   import MarkdownRenderer from '$lib/components/common/MarkdownRenderer.svelte';
-  import { X, ZoomIn, ArrowLeft, ArrowRight, Share2, Check } from '@lucide/svelte';
+  import ImageLightbox, { type LightboxItem } from '$lib/components/common/ImageLightbox.svelte';
+  import Image from '$lib/components/common/Image.svelte';
+  import { ZoomIn, Share2, Check } from '@lucide/svelte';
 
   const FALLBACK_IMAGE = "/images/inspiration_cosmology.webp";
 
@@ -12,19 +13,56 @@
 
   let { project }: Props = $props();
 
-  let activeLightboxImg = $state<string | null>(null);
-  let activeLightboxCaption = $state<string | null>(null);
+  let lightboxIndex = $state<number | null>(null);
   let hasCopiedLink = $state(false);
 
-  function openLightbox(src?: string, caption?: string) {
-    if (!src) return;
-    activeLightboxImg = src;
-    activeLightboxCaption = caption || null;
+  /**
+   * Single ordered set of viewable images so the hero plate and the gallery
+   * plates share one viewer with working ← / → navigation and a counter.
+   */
+  let lightboxItems = $derived.by<LightboxItem[]>(() => {
+    const items: LightboxItem[] = [];
+    if (project.thumbnailSrc) {
+      items.push({
+        src: project.thumbnailSrc,
+        alt: `${project.title}${project.year ? ` (${project.year})` : ''} — lead plate`,
+        caption: project.description || null
+      });
+    }
+    for (const [i, src] of (project.gallery ?? []).entries()) {
+      const total = project.gallery?.length ?? 0;
+      items.push({
+        src,
+        alt: `${project.title} — artifact plate ${i + 1} of ${total}`,
+        caption: project.client ? `${project.client} · Plate ${i + 1}` : `Plate ${i + 1}`
+      });
+    }
+    return items;
+  });
+
+  /** EXIF-ish strip shown in the viewer when the project carries the metadata. */
+  let lightboxExif = $derived(
+    [
+      project.client ? { label: 'Client', value: project.client } : null,
+      project.role ? { label: 'Role', value: project.role } : null,
+      project.year ? { label: 'Year', value: project.year } : null
+    ].filter((row): row is { label: string; value: string } => row !== null)
+  );
+
+  function openLightboxAt(index: number) {
+    lightboxIndex = index;
   }
 
   function closeLightbox() {
-    activeLightboxImg = null;
-    activeLightboxCaption = null;
+    lightboxIndex = null;
+  }
+
+  // Space/Enter activate divs styled as buttons; Space must not also scroll.
+  function handlePlateKeydown(e: KeyboardEvent, index: number) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openLightboxAt(index);
+    }
   }
 
   async function shareProject() {
@@ -34,14 +72,6 @@
       setTimeout(() => (hasCopiedLink = false), 2500);
     }
   }
-
-  onMount(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeLightbox();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  });
 </script>
 
 <article class="max-w-4xl mx-auto space-y-12 select-none">
@@ -67,7 +97,7 @@
       >
         {#if hasCopiedLink}
           <Check size={12} class="text-emerald-600" />
-          <span class="text-emerald-700">Link Copied!</span>
+          <span role="status" aria-live="polite" class="text-emerald-700">Link Copied!</span>
         {:else}
           <Share2 size={12} />
           <span>Share</span>
@@ -113,14 +143,17 @@
     <div
       role="button"
       tabindex="0"
-      onclick={() => openLightbox(project.thumbnailSrc, project.title)}
-      onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && openLightbox(project.thumbnailSrc, project.title)}
+      onclick={() => openLightboxAt(0)}
+      onkeydown={(e) => handlePlateKeydown(e, 0)}
       class="group relative aspect-[16/9] w-full overflow-hidden rounded-md bg-[#E8E6DF] dark:bg-[#1C1B19] shadow-md border border-[#E8E6DF] dark:border-[#2E2C28] cursor-zoom-in"
     >
-      <img
+      <Image
         src={project.thumbnailSrc}
-        alt={project.title}
-        onerror={(e) => { (e.currentTarget as HTMLImageElement).src = FALLBACK_IMAGE; }}
+        alt={`${project.title}${project.year ? ` (${project.year})` : ''} — lead plate`}
+        sizes="hero"
+        width={2400}
+        priority="lcp"
+        fallbackSrc={FALLBACK_IMAGE}
         class="w-full h-full object-cover group-hover:scale-101 transition-transform duration-500"
       />
       <div class="absolute bottom-3 right-3 p-2 rounded-full bg-black/60 backdrop-blur-xs text-white opacity-0 group-hover:opacity-100 transition-opacity">
@@ -134,6 +167,8 @@
     <MarkdownRenderer
       content={project.body}
       className="editorial-prose pt-4"
+      toc
+      tocTitle="In This Case Study"
     />
   {/if}
 
@@ -149,20 +184,25 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         {#each project.gallery as img, idx}
+          {@const itemIndex = project.thumbnailSrc ? idx + 1 : idx}
           <div
             role="button"
             tabindex="0"
-            onclick={() => openLightbox(img, `${project.title} — Artifact ${idx + 1}`)}
-            onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && openLightbox(img, `${project.title} — Artifact ${idx + 1}`)}
+            onclick={() => openLightboxAt(itemIndex)}
+            onkeydown={(e) => handlePlateKeydown(e, itemIndex)}
             class="group relative overflow-hidden rounded bg-[#E8E6DF] dark:bg-[#1C1B19] border border-[#E8E6DF] dark:border-[#2E2C28] shadow-xs aspect-[4/3] cursor-zoom-in"
           >
-            <img
+            <Image
               src={img}
-              alt="{project.title} Artifact {idx + 1}"
-              loading="lazy"
-              onerror={(e) => { (e.currentTarget as HTMLImageElement).src = FALLBACK_IMAGE; }}
+              alt="{project.title} — artifact plate {idx + 1} of {project.gallery.length}"
+              sizes="halfGrid"
+              width={2400}
+              fallbackSrc={FALLBACK_IMAGE}
               class="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500"
             />
+            <span class="absolute top-2.5 left-2.5 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-black/60 text-white backdrop-blur-xs pointer-events-none">
+              Plate {idx + 1}
+            </span>
             <div class="absolute bottom-2.5 right-2.5 p-1.5 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
               <ZoomIn size={13} />
             </div>
@@ -173,41 +213,12 @@
   {/if}
 </article>
 
-<!-- Fullscreen Lightbox Modal -->
-{#if activeLightboxImg}
-  <div
-    role="dialog"
-    aria-modal="true"
-    tabindex="-1"
-    onclick={closeLightbox}
-    onkeydown={(e) => e.key === 'Escape' && closeLightbox()}
-    class="fixed inset-0 z-50 bg-black/92 backdrop-blur-md flex flex-col items-center justify-center p-4 sm:p-8 cursor-zoom-out animate-in fade-in"
-  >
-    <button
-      type="button"
-      onclick={closeLightbox}
-      class="absolute top-5 right-5 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
-      aria-label="Close image viewer"
-    >
-      <X size={20} />
-    </button>
-
-    <div
-      role="presentation"
-      class="max-w-5xl max-h-[85vh] flex flex-col items-center select-none"
-      onclick={(e) => e.stopPropagation()}
-      onkeydown={(e) => e.stopPropagation()}
-    >
-      <img
-        src={activeLightboxImg}
-        alt="Expanded artifact inspection"
-        class="max-w-full max-h-[80vh] object-contain rounded shadow-2xl"
-      />
-      {#if activeLightboxCaption}
-        <p class="mt-3 text-xs sm:text-sm font-serif italic text-stone-300 text-center">
-          {activeLightboxCaption}
-        </p>
-      {/if}
-    </div>
-  </div>
-{/if}
+<ImageLightbox
+  items={lightboxItems}
+  index={lightboxIndex}
+  onClose={closeLightbox}
+  onIndexChange={(i) => (lightboxIndex = i)}
+  label="Case study image viewer"
+  fallbackSrc={FALLBACK_IMAGE}
+  exif={lightboxExif}
+/>

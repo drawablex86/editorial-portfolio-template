@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import type { ZineItem } from '$lib/types';
+  import { trapFocus } from '$lib/overlay';
   import {
     ChevronLeft,
     ChevronRight,
@@ -32,6 +33,9 @@
   let isSoundEnabled = $state(false);
   let isLoaded = $state(false);
   let showThumbnails = $state(false);
+  let reducedMotion = false;
+  // True while the flipbook is meaningfully on screen; gates global arrow keys.
+  let isInView = $state(false);
 
   // User preference: 'auto' | 'dual' | 'single'
   let layoutPreference = $state<'auto' | 'dual' | 'single'>('auto');
@@ -120,7 +124,7 @@
         minHeight: 280,
         maxHeight: 1600,
         drawShadow: true,
-        flippingTime: 650,
+        flippingTime: reducedMotion ? 1 : 650,
         usePortrait: isSinglePageMode,
         startZIndex: 10,
         autoSize: false,
@@ -156,6 +160,7 @@
   }
 
   onMount(() => {
+    reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     initOrUpdateFlipBook();
 
     const handleResize = () => {
@@ -167,14 +172,38 @@
 
     window.addEventListener('resize', handleResize);
 
+    // Track visibility so the global arrow keys only flip pages when the reader
+    // is actually on screen (and not while the user types in a field/addressed
+    // to another scrolled-away section like the blog search box).
+    const visibilityObserver = new IntersectionObserver(
+      (entries) => {
+        isInView = entries.some((entry) => entry.isIntersecting);
+      },
+      { threshold: 0.25 }
+    );
+    if (flipStage) visibilityObserver.observe(flipStage);
+
     // Keyboard navigation
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (isFullscreen) toggleFullscreen();
+        return;
+      }
+
+      // Only hijack page-turn keys when the reader is in view, and never while
+      // a form field or the thumbnails/menu region is the focus target.
+      const target = e.target as HTMLElement | null;
+      const isTyping =
+        !!target &&
+        (target.isContentEditable ||
+          ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
+      if (isTyping) return;
+      if (!isFullscreen && !isInView) return;
+
       if (e.key === 'ArrowRight' || e.key === 'PageDown') {
         flipBookInstance?.flipNext();
       } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
         flipBookInstance?.flipPrev();
-      } else if (e.key === 'Escape' && isFullscreen) {
-        toggleFullscreen();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -182,9 +211,16 @@
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('keydown', handleKeyDown);
+      visibilityObserver.disconnect();
       clearTimeout(resizeTimeout);
       flipBookInstance?.destroy();
     };
+  });
+
+  // Focus trap + scroll lock while the reader occupies the whole viewport.
+  $effect(() => {
+    if (!isFullscreen || !flipStage) return;
+    return trapFocus(flipStage);
   });
 
   onDestroy(() => {
@@ -241,6 +277,9 @@
 
 <div
   bind:this={flipStage}
+  role={isFullscreen ? 'dialog' : undefined}
+  aria-modal={isFullscreen ? 'true' : undefined}
+  aria-label={isFullscreen ? `${zine.title} — fullscreen reader` : undefined}
   class="relative w-full min-h-[82vh] flex flex-col items-center justify-center select-none overflow-hidden py-4 sm:py-6"
   class:fixed={isFullscreen}
   class:inset-0={isFullscreen}
@@ -286,6 +325,7 @@
             alt={page.alt || `${zine.title} page ${page.pageNumber}`}
             class="w-full h-full object-contain pointer-events-none select-none bg-[#EFECE6] dark:bg-[#181716]"
             loading={idx < 4 ? 'eager' : 'lazy'}
+            fetchpriority={idx === 0 ? 'high' : 'auto'}
             decoding="async"
           />
 
@@ -326,7 +366,12 @@
       </button>
 
       <!-- Page Counter Indicator -->
-      <div class="px-2 font-medium tracking-wider whitespace-nowrap min-w-[70px] text-center">
+      <div
+        role="status"
+        aria-live="polite"
+        aria-label="Page {currentPage + 1} of {totalPages}"
+        class="px-2 font-medium tracking-wider whitespace-nowrap min-w-[70px] text-center"
+      >
         <span>{String(currentPage + 1).padStart(2, '0')}</span>
         <span class="text-stone-400 mx-1">/</span>
         <span class="text-stone-500">{String(totalPages).padStart(2, '0')}</span>

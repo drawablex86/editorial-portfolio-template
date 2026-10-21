@@ -1,11 +1,11 @@
 import { json, error } from '@sveltejs/kit';
 import { dev } from '$app/environment';
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs';
 
-const execPromise = promisify(exec);
+const execFilePromise = promisify(execFile);
 let isSyncing = false;
 
 export async function POST({ request }: { request: Request }) {
@@ -29,26 +29,18 @@ export async function POST({ request }: { request: Request }) {
       // Empty or non-JSON body is valid
     }
 
+    // The sync script persists the resolved shelf URL itself, so no pre-write here.
     const libraryPath = path.join(process.cwd(), 'content', 'library.json');
-    if (customUrl && fs.existsSync(libraryPath)) {
-      try {
-        const lib = JSON.parse(fs.readFileSync(libraryPath, 'utf-8'));
-        lib.goodreadsUrl = customUrl;
-        fs.writeFileSync(libraryPath, JSON.stringify(lib, null, 2), 'utf-8');
-      } catch {
-        // ignore write error
-      }
-    }
 
     const scriptPath = path.join(process.cwd(), 'scripts', 'sync-goodreads.mjs');
     if (!fs.existsSync(scriptPath)) {
       return json({ success: false, error: 'sync-goodreads.mjs not found' }, { status: 404 });
     }
 
-    const cmd = customUrl
-      ? `node "${scriptPath}" ${JSON.stringify(customUrl)}`
-      : `node "${scriptPath}"`;
-    const { stdout } = await execPromise(cmd, { timeout: 30000 });
+    // execFile avoids shell parsing entirely (no injection via the URL) and the
+    // generous timeout covers RSS parsing plus the library.json write.
+    const args = customUrl ? [scriptPath, customUrl] : [scriptPath];
+    const { stdout } = await execFilePromise(process.execPath, args, { timeout: 120000 });
 
     let lastSynced = new Date().toISOString().split('T')[0];
     let bookCount = 0;

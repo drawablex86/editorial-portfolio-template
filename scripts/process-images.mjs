@@ -109,6 +109,38 @@ export const CONTEXTUAL_PRESETS = {
   },
 };
 
+/**
+ * Responsive breakpoints emitted alongside every optimized master.
+ *
+ * `uses-responsive-images` costs the site real bandwidth: a 1920px hero streamed
+ * into a 390px viewport downloads ~5x the bytes it can display. Each staged
+ * image therefore ships the master plus the variants below; the front end picks
+ * with `srcset`/`sizes` and never has to upscale.
+ *
+ * Only widths at or below the master's own width are produced (see
+ * `getVariantWidths`), so a 1200px card never grows a 1920px sibling.
+ */
+export const RESPONSIVE_WIDTHS = [480, 768, 1200, 1600];
+
+/** Suffix used for responsive siblings: `hero.webp` -> `hero-768.webp`. */
+export function variantName(filename, width) {
+  const ext = path.extname(filename);
+  return `${path.basename(filename, ext)}-${width}${ext}`;
+}
+
+/**
+ * Widths worth emitting for a source image.
+ *
+ * Excludes widths at or above the source (the master already covers those) and
+ * any variant that would be a trivial size reduction, which would otherwise
+ * litter `static/images` with near-duplicates.
+ */
+export function getVariantWidths(sourceWidth, masterWidth) {
+  const ceiling = Math.min(sourceWidth || masterWidth || 0, masterWidth || sourceWidth || 0);
+  if (!ceiling) return [];
+  return RESPONSIVE_WIDTHS.filter((w) => w < ceiling && w >= 320);
+}
+
 export function getPresetForImage(filename) {
   const lower = filename.toLowerCase();
   if (lower.includes('inspiration_cosmology') || lower.includes('inspiration')) {
@@ -421,12 +453,49 @@ export async function optimizeImages(options = {}, logger = console.log) {
           `   ✅ Converted: ${(webpSize / 1024).toFixed(1)} KB (Saved ${savingsPercent}% from ${(originalStats.size / 1024).toFixed(1)} KB)`
         );
 
+        // Responsive siblings, emitted from the same (possibly AI-deterred)
+        // source so every variant carries the protection perturbations.
+        const masterWidth = Math.min(
+          metadata.width || preset.maxWidth,
+          preset.maxWidth
+        );
+        const variantWidths = getVariantWidths(metadata.width, preset.maxWidth);
+        const variants = [];
+        for (const width of variantWidths) {
+          const variantRelName =
+            relBaseDir === '.'
+              ? variantName(`${baseName}.webp`, width)
+              : `${relBaseDir}/${variantName(`${baseName}.webp`, width)}`;
+
+          const buffer = await sharp(inputPath)
+            .resize({ width, withoutEnlargement: true })
+            .webp({
+              quality: preset.quality,
+              smartSubsample: preset.smartSubsample,
+              effort: preset.effort,
+            })
+            .toBuffer();
+
+          const target = path.join(STATIC_IMAGES_DIR, variantRelName);
+          fs.writeFileSync(target, buffer);
+          variants.push({ width, name: variantRelName, size: buffer.length });
+          totalWebpBytes += buffer.length;
+        }
+        if (variants.length > 0) {
+          logger(
+            `   🪜 Variants: ${variants
+              .map((v) => `${v.width}w ${(v.size / 1024).toFixed(0)}KB`)
+              .join(', ')} (master ${masterWidth}w)`
+          );
+        }
+
         conversions.push({
           originalName: relName,
           webpName: webpRelName,
           originalSize: originalStats.size,
           webpSize,
           isGlazed,
+          variants,
         });
 
         // Archive original to Samsung T7 SSD or delete raw file
@@ -442,12 +511,26 @@ export async function optimizeImages(options = {}, logger = console.log) {
       }
     } else {
       logger(`   [Dry Run] Would convert to ${webpRelName} (${preset.description})`);
+      const variantWidths = getVariantWidths(null, preset.maxWidth);
+      logger(
+        `   [Dry Run] Would also emit variants: ${
+          variantWidths.map((w) => variantName(`${baseName}.webp`, w)).join(', ') || '(none)'
+        }`
+      );
       conversions.push({
         originalName: relName,
         webpName: webpRelName,
         originalSize: originalStats.size,
         webpSize: Math.round(originalStats.size * 0.4), // estimate for dry run
         isGlazed,
+        variants: variantWidths.map((width) => ({
+          width,
+          name:
+            relBaseDir === '.'
+              ? variantName(`${baseName}.webp`, width)
+              : `${relBaseDir}/${variantName(`${baseName}.webp`, width)}`,
+          size: Math.round(originalStats.size * 0.4 * (width / preset.maxWidth)),
+        })),
       });
     }
   }

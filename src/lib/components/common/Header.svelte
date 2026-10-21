@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { page } from '$app/state';
   import { Menu, X, ChevronDown, Sparkles, BookOpen, Layers, User, ArrowUpRight } from '@lucide/svelte';
+  import { trapFocus } from '$lib/overlay';
   import ThemeToggle from './ThemeToggle.svelte';
 
   export type ViewType = 'home' | 'works' | 'writing' | 'now' | 'cabinet' | 'about' | 'inspiration' | 'zines' | 'library';
@@ -54,13 +55,74 @@
   let isMobileMenuOpen = $state(false);
   let isCabinetOpen = $state(false);
   let cabinetRef: HTMLDivElement | null = $state(null);
+  let cabinetTriggerEl: HTMLButtonElement | null = $state(null);
+  let cabinetMenuEl: HTMLDivElement | null = $state(null);
+  let headerEl: HTMLElement | null = $state(null);
+  let mobileDrawerEl: HTMLDivElement | null = $state(null);
+
+  /** Focusable menu items inside the Cabinet popover (roving focus). */
+  function cabinetItems(): HTMLElement[] {
+    if (!cabinetMenuEl) return [];
+    return Array.from(cabinetMenuEl.querySelectorAll<HTMLElement>('[role="menuitem"]'));
+  }
+
+  function handleCabinetKeydown(e: KeyboardEvent) {
+    const items = cabinetItems();
+    if (items.length === 0) return;
+    const current = items.indexOf(document.activeElement as HTMLElement);
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      items[(current + 1 + items.length) % items.length].focus();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      items[(current - 1 + items.length) % items.length].focus();
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      items[0].focus();
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      items[items.length - 1].focus();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      isCabinetOpen = false;
+      cabinetTriggerEl?.focus();
+    } else if (e.key === 'Tab') {
+      // Standard menu pattern: leaving the menu closes it.
+      isCabinetOpen = false;
+    }
+  }
+
+  // Move focus into the popover when it opens so keyboard users land on the menu.
+  $effect(() => {
+    if (isCabinetOpen && cabinetMenuEl) {
+      requestAnimationFrame(() => cabinetItems()[0]?.focus());
+    }
+  });
 
   onMount(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        isMobileMenuOpen = false;
-        isCabinetOpen = false;
+    // Keep the CSS variable in sync with the real rendered header height so the
+    // mobile drawer, scroll padding, and anchor offsets never drift out of date.
+    const syncHeaderHeight = () => {
+      if (headerEl) {
+        document.documentElement.style.setProperty(
+          '--header-height',
+          `${Math.round(headerEl.getBoundingClientRect().height)}px`
+        );
       }
+    };
+    syncHeaderHeight();
+
+    const resizeObserver = new ResizeObserver(syncHeaderHeight);
+    if (headerEl) resizeObserver.observe(headerEl);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      // When focus is inside the Cabinet menu, let its own handler manage the
+      // close + focus restore so the trigger gets focus back.
+      if (cabinetMenuEl?.contains(document.activeElement)) return;
+      isMobileMenuOpen = false;
+      isCabinetOpen = false;
     };
 
     const handleClickOutside = (e: MouseEvent) => {
@@ -72,19 +134,16 @@
     window.addEventListener('keydown', handleKeyDown);
     document.addEventListener('pointerdown', handleClickOutside);
     return () => {
+      resizeObserver.disconnect();
       window.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('pointerdown', handleClickOutside);
     };
   });
 
   $effect(() => {
-    if (typeof document !== 'undefined') {
-      if (isMobileMenuOpen) {
-        document.body.style.overflow = 'hidden';
-      } else {
-        document.body.style.overflow = '';
-      }
-    }
+    // Scroll lock + focus trap are handled by the shared overlay helper.
+    if (!isMobileMenuOpen || !mobileDrawerEl) return;
+    return trapFocus(mobileDrawerEl, { initialFocus: mobileDrawerEl });
   });
 
   function isItemActive(key: string): boolean {
@@ -94,7 +153,7 @@
       return false;
     }
     if (key === 'works') {
-      return pathname.startsWith('/works') || pathname.startsWith('/projects') || pathname.startsWith('/work') || pathname.startsWith('/play');
+      return pathname.startsWith('/works') || pathname.startsWith('/projects') || pathname.startsWith('/work');
     }
     if (key === 'writing') return pathname.startsWith('/blog');
     if (key === 'now') return pathname.startsWith('/now');
@@ -123,6 +182,7 @@
       }
     }
   }
+  let author = $derived(page.data?.seoSettings?.author);
 </script>
 
 <a
@@ -133,6 +193,7 @@
 </a>
 
 <header
+  bind:this={headerEl}
   class="fixed top-0 left-0 w-full px-4 py-3 sm:px-6 sm:py-3.5 md:px-8 md:py-4 flex flex-row items-center justify-between bg-[#F4F2ED]/95 dark:bg-[#141312]/95 backdrop-blur-md z-40 border-b border-[#E8E6DF] dark:border-[#2E2C28] transition-colors duration-200"
 >
   <!-- Site Identity -->
@@ -140,7 +201,7 @@
     <a
       href="/"
       class="text-base sm:text-lg md:text-xl font-medium tracking-tight whitespace-nowrap text-[#2C2B29] dark:text-[#EDE9E1] hover:text-stone-600 dark:hover:text-stone-400 transition-colors focus:outline-none focus:ring-2 focus:ring-[#2C2B29] dark:focus:ring-[#EDE9E1] rounded py-1 px-1 -ml-1 cursor-pointer"
-      aria-label="Linus Torvalds — Return to home"
+      aria-label="{author?.name || 'Linus Torvalds'} — Return to home"
       onclick={(e) => {
         if (page.url.pathname === '/' && onNavigate) {
           e.preventDefault();
@@ -148,7 +209,7 @@
         }
       }}
     >
-      Linus Torvalds
+      {author?.name || 'Linus Torvalds'}
     </a>
   </div>
 
@@ -173,6 +234,7 @@
       <div class="relative" bind:this={cabinetRef}>
         <button
           type="button"
+          bind:this={cabinetTriggerEl}
           onclick={() => (isCabinetOpen = !isCabinetOpen)}
           aria-expanded={isCabinetOpen}
           aria-haspopup="true"
@@ -190,8 +252,11 @@
         <!-- Cabinet Archival Drawer Dropdown -->
         {#if isCabinetOpen}
           <div
+            bind:this={cabinetMenuEl}
             role="menu"
+            aria-label="Cabinet of curiosities"
             tabindex="-1"
+            onkeydown={handleCabinetKeydown}
             class="absolute right-0 top-full mt-2 w-80 sm:w-88 bg-[#FAF9F5] dark:bg-[#181715] border border-[#E8E6DF] dark:border-[#2E2C28] rounded-xl shadow-xl py-3 px-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150 select-none"
           >
             <!-- Archival Drawer Header -->
@@ -209,7 +274,8 @@
                   href={item.href}
                   onclick={() => (isCabinetOpen = false)}
                   role="menuitem"
-                  class="group flex items-start gap-3 p-2.5 rounded-lg transition-all border {itemActive
+                  tabindex="-1"
+                  class="group flex items-start gap-3 p-2.5 rounded-lg transition-all border focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C2B29] dark:focus-visible:ring-[#EDE9E1] {itemActive
                     ? 'bg-black/5 dark:bg-white/10 border-stone-300 dark:border-stone-700'
                     : 'border-transparent hover:bg-black/5 dark:hover:bg-white/5 hover:border-stone-200 dark:hover:border-stone-800'}"
                 >
@@ -280,7 +346,13 @@
 <!-- Mobile Fullscreen Drawer -->
 {#if isMobileMenuOpen}
   <div
-    class="fixed inset-0 top-[53px] z-30 bg-[#F4F2ED] dark:bg-[#141312] overflow-y-auto px-6 py-8 flex flex-col justify-between md:hidden border-b border-[#E8E6DF] dark:border-[#2E2C28] transition-all"
+    bind:this={mobileDrawerEl}
+    role="dialog"
+    aria-modal="true"
+    aria-label="Site menu"
+    tabindex="-1"
+    class="fixed inset-x-0 z-30 bg-[#F4F2ED] dark:bg-[#141312] overflow-y-auto px-6 py-8 flex flex-col justify-between md:hidden border-b border-[#E8E6DF] dark:border-[#2E2C28] transition-all"
+    style="top: var(--header-height, 53px);"
   >
     <div class="space-y-6">
       <!-- Section 1: Main Practice Flow -->
@@ -358,11 +430,11 @@
     <!-- Drawer Footer -->
     <div class="pt-6 border-t border-[#E8E6DF] dark:border-[#2E2C28] mt-8 text-xs font-mono text-stone-500 dark:text-stone-400 flex flex-col gap-1.5">
       <div class="flex items-center justify-between">
-        <span>Linus Torvalds Studio</span>
-        <span>Portland / Helsinki</span>
+        <span>{author?.name || 'Linus Torvalds'} Studio</span>
+        <span>{author?.location || 'Portland, Oregon'}</span>
       </div>
       <p class="font-serif text-stone-600 dark:text-stone-400 text-xs italic">
-        Systems Architecture, Kernel Engineering &amp; Optics
+        Systems Architecture & Engineering
       </p>
     </div>
   </div>

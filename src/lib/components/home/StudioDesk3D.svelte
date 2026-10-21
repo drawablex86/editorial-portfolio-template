@@ -93,6 +93,14 @@
 
   onMount(() => {
     initScatteredPositions();
+
+    // Escape closes the artwork inspector
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && inspectedCard) inspectedCard = null;
+    };
+    window.addEventListener('keydown', onKeyDown);
+
+    return () => window.removeEventListener('keydown', onKeyDown);
   });
 
   // Pointer drag logic
@@ -255,19 +263,31 @@
 
   <!-- Full Artwork Modal Inspector -->
   {#if inspectedCard}
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
     <div
       role="dialog"
       aria-modal="true"
       aria-labelledby="inspected-card-title"
+      tabindex="-1"
       class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 bg-black/80 backdrop-blur-sm"
+      onclick={() => (inspectedCard = null)}
+      onkeydown={(e) => {
+        if (e.key === 'Escape' || e.key === 'Enter') inspectedCard = null;
+      }}
     >
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
       <div
         class="relative max-w-xl w-full bg-[#FAF9F5] dark:bg-[#181715] p-5 rounded-xl border border-[#E8E6DF] dark:border-[#2E2C28] shadow-2xl text-[#2C2B29] dark:text-[#EDE9E1]"
+        role="document"
+        onclick={(e) => e.stopPropagation()}
+        onkeydown={(e) => e.stopPropagation()}
       >
         <button
           type="button"
           onclick={() => (inspectedCard = null)}
-          class="absolute top-4 right-4 p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 cursor-pointer"
+          class="absolute top-4 right-4 p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2C2B29] dark:focus:ring-[#EDE9E1]"
           aria-label="Close inspection"
         >
           <X size={18} />
@@ -285,6 +305,13 @@
         {#if inspectedCard.caption}
           <p class="font-sans text-xs text-stone-500 dark:text-stone-400 mt-1">{inspectedCard.caption}</p>
         {/if}
+        <a
+          href="/works"
+          class="mt-4 inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-stone-600 dark:text-stone-400 hover:text-[#2C2B29] dark:hover:text-[#EDE9E1] transition-colors"
+        >
+          <span>Browse the works archive</span>
+          <span aria-hidden="true">→</span>
+        </a>
       </div>
     </div>
   {/if}

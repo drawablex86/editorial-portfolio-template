@@ -1,10 +1,21 @@
 @import "tailwindcss";
-@import "@fontsource/geist/index.css";
-@import "@fontsource/newsreader/index.css";
+
+/* Fonts are imported per-weight and per-subset rather than via the package
+   `index.css`, which ships cyrillic/vietnamese/latin-ext faces plus woff
+   fallbacks for a single 400 weight. The site renders Latin only, so this drops
+   the unused subsets entirely and adds the 500/600 faces the UI actually asks
+   for — previously `font-medium` (156 usages) and `font-semibold` (50) were
+   being synthesised by the browser, which is why adding them changes rendering. */
+@import "@fontsource/geist/latin-400.css";
+@import "@fontsource/geist/latin-500.css";
+@import "@fontsource/geist/latin-600.css";
+@import "@fontsource/newsreader/latin-400.css";
+@import "@fontsource/newsreader/latin-500.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
+  --header-height: 53px;
   --background: #F4F2ED;
   --foreground: #2C2B29;
   --surface: #FFFFFF;
@@ -49,6 +60,27 @@ body {
   transition: background-color 0.25s ease, color 0.25s ease;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Anchor offsets & smooth in-page jumps clear the fixed header */
+html {
+  scroll-padding-top: calc(var(--header-height) + 1rem);
+  scroll-behavior: smooth;
+}
+
+/* Global keyboard-focus baseline.
+   `:focus-visible` only paints for keyboard/programmatic focus, so mouse users
+   see no rings. Individual components can still override; this guarantees every
+   interactive element has a visible, on-palette focus indicator. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Drop the default ring where a component already draws its own. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus:not(:focus-visible) {
+  outline: none;
 }
 
 /* Typographic utility classes */
@@ -151,6 +183,28 @@ body::before {
   color: #ede9e1;
 }
 
+/* Deep-link affordance on section headings — revealed on hover/focus */
+.editorial-prose :is(h1, h2, h3, h4) {
+  scroll-margin-top: calc(var(--header-height) + 1.5rem);
+}
+.editorial-prose .heading-anchor {
+  margin-left: 0.4em;
+  font-family: var(--font-geist-mono);
+  font-size: 0.55em;
+  font-weight: 400;
+  text-decoration: none;
+  vertical-align: middle;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.editorial-prose :is(h1, h2, h3, h4):hover .heading-anchor {
+  opacity: 0.55;
+}
+.editorial-prose .heading-anchor:hover,
+.editorial-prose .heading-anchor:focus-visible {
+  opacity: 1;
+}
+
 .editorial-prose p {
   margin-bottom: 1.5rem;
   text-wrap: pretty;
@@ -228,3 +282,176 @@ body::before {
   width: 100%;
   height: 100%;
 }
+
+/* Code blocks & monospace syntax */
+.editorial-prose pre {
+  background-color: #242321;
+  color: #ede9e1;
+  border-radius: 0 0 4px 4px;
+  padding: 1.25rem 1.5rem;
+  overflow-x: auto;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  margin: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: none;
+}
+
+.editorial-prose .code-block {
+  margin: 2rem 0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.editorial-prose .code-block__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.4rem 0.9rem;
+  background-color: #1b1a19;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 4px 4px 0 0;
+}
+
+.editorial-prose .code-block__lang {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #a8a29e;
+}
+
+.editorial-prose .code-block__copy {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #d6d3d1;
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.editorial-prose .code-block__copy:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+.editorial-prose .code-block__copy[data-copied="true"] {
+  color: #8fd6a4;
+  border-color: rgba(143, 214, 164, 0.4);
+}
+
+/* Lightweight token colours — warm neutrals plus one accent, on palette. */
+.editorial-prose .tok-comment {
+  color: #8a8681;
+  font-style: italic;
+}
+.editorial-prose .tok-keyword {
+  color: #e0c9a6;
+}
+.editorial-prose .tok-string {
+  color: #a8c8a0;
+}
+.editorial-prose .tok-number {
+  color: #d4a89a;
+}
+.editorial-prose .tok-key {
+  color: #e0c9a6;
+}
+
+.editorial-prose :not(pre) > code {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85em;
+  background-color: #efece6;
+  color: #2c2b29;
+  padding: 0.15rem 0.35rem;
+  border-radius: 3px;
+  border: 1px solid #e2ded4;
+}
+.dark .editorial-prose :not(pre) > code {
+  background-color: #242321;
+  color: #ede9e1;
+  border-color: #2e2c28;
+}
+
+/* Editorial spec tables */
+.editorial-prose table {
+  width: 100%;
+  margin: 2rem 0;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+.editorial-prose th {
+  text-align: left;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid #2c2b29;
+  color: #2c2b29;
+}
+.dark .editorial-prose th {
+  border-bottom-color: #ede9e1;
+  color: #ede9e1;
+}
+.editorial-prose td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e8e6df;
+  color: #44403c;
+  vertical-align: top;
+}
+.dark .editorial-prose td {
+  border-bottom-color: #2e2c28;
+  color: #d6d3d1;
+}
+
+/* Route crossfade: a short, inexpensive fade+lift on client-side navigation.
+   Collapsed automatically by the reduced-motion block below. */
+@keyframes route-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.route-fade {
+  animation: route-enter 0.24s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+/* Reduced motion: collapse transitions/animations site-wide */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* The route fade is decorative — there is nothing to cross-fade for users
+     who ask for reduced motion, so skip the animation entirely. */
+  .route-fade {
+    animation: none;
+  }
+
+  /* Restore the native cursor — the paper plane's motion is decorative */
+  body:not(:has([data-studio-mode])),
+  body:not(:has([data-studio-mode])) a,
+  body:not(:has([data-studio-mode])) button,
+  body:not(:has([data-studio-mode])) [role="button"],
+  body:not(:has([data-studio-mode])) label,
+  body:not(:has([data-studio-mode])) summary {
+    cursor: auto;
+  }
+}
+

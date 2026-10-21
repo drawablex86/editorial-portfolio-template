@@ -361,7 +361,7 @@
               >
                 {#if copiedUrl === asset.url}
                   <Check size={11} class="text-emerald-600" />
-                  <span class="text-emerald-700 font-medium">Copied!</span>
+                  <span role="status" aria-live="polite" class="text-emerald-700 font-medium">Copied!</span>
                 {:else}
                   <Copy size={11} />
                   <span>Copy</span>
@@ -402,9 +402,10 @@
 
         <div class="space-y-3 text-xs font-mono">
           <div class="space-y-1">
-            <label class="text-[10px] text-stone-500 uppercase tracking-wider block">Filename</label>
+            <label for="media-rename-input" class="text-[10px] text-stone-500 uppercase tracking-wider block">Filename</label>
             <div class="flex items-center gap-2">
               <input
+                id="media-rename-input"
                 type="text"
                 bind:value={renameValue}
                 class="flex-1 bg-white border border-[#DDD9CE] rounded px-3 py-1.5 text-xs text-stone-900 focus:outline-none focus:border-stone-500"
@@ -432,8 +433,9 @@
           </div>
 
           <div class="space-y-1">
-            <label class="text-[10px] text-stone-500 uppercase tracking-wider block">Compression Intent</label>
+            <label for="media-intent-select" class="text-[10px] text-stone-500 uppercase tracking-wider block">Compression Intent</label>
             <select
+              id="media-intent-select"
               bind:value={classificationValue}
               onchange={() => {
                 if (classificationValue === 'art') aiProtectedValue = true;

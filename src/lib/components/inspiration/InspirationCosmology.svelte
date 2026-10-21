@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import type { InspirationData, InspirationNode } from '$lib/types';
+  import Image from '$lib/components/common/Image.svelte';
   import { X, Sparkles, Move, Compass, Eye } from '@lucide/svelte';
 
   interface Props {
@@ -103,9 +104,12 @@
       >
         <!-- 1. Ambient Background Layer (Low Opacity Warm Archival Plate) -->
         <div class="absolute inset-0 pointer-events-none opacity-25 dark:opacity-20 mix-blend-screen transition-opacity duration-700">
-          <img
+          <Image
             src="/images/inspiration_cosmology.webp"
             alt="Inspiration Cosmology Ambient Plate"
+            sizes="100vw"
+            width={2880}
+            priority="lcp"
             class="w-full h-full object-cover"
           />
         </div>
@@ -115,9 +119,13 @@
           class="absolute inset-0 pointer-events-none transition-opacity duration-300 {isHovering ? 'opacity-100' : 'opacity-0'}"
           style="mask-image: radial-gradient(circle 340px at {mousePos.x}px {mousePos.y}px, black 0%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0.15) 75%, transparent 100%); -webkit-mask-image: radial-gradient(circle 340px at {mousePos.x}px {mousePos.y}px, black 0%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0.15) 75%, transparent 100%);"
         >
-          <img
+          <!-- Same asset as the ambient layer above; the ladder keeps it cheap and
+               the URL is identical so this is a cache hit, not a second download. -->
+          <Image
             src="/images/inspiration_cosmology.webp"
             alt="Inspiration Cosmology Illuminated"
+            sizes="100vw"
+            width={2880}
             class="w-full h-full object-cover"
           />
         </div>

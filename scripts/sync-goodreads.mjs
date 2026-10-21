@@ -14,11 +14,27 @@ function resolveGoodreadsRssUrl(inputUrl) {
   if (trimmed.includes('/review/list_rss/')) {
     return trimmed;
   }
-  // Convert https://www.goodreads.com/review/list/USER_ID?shelf=SHELF to list_rss
+  // Convert https://www.goodreads.com/review/list/USER_ID?... to list_rss
   if (trimmed.includes('/review/list/')) {
     return trimmed.replace('/review/list/', '/review/list_rss/');
   }
   return trimmed;
+}
+
+// Goodreads' legacy RSS endpoint keys the shelf off `shelf=`, not `tag=`.
+// Normalise ?tag=favourites → ?shelf=favourites so custom tag URLs resolve.
+function normalizeRssQuery(rssUrl) {
+  try {
+    const url = new URL(rssUrl);
+    const tag = url.searchParams.get('tag');
+    if (tag && !url.searchParams.get('shelf')) {
+      url.searchParams.set('shelf', tag);
+      url.searchParams.delete('tag');
+    }
+    return url.toString();
+  } catch {
+    return rssUrl;
+  }
 }
 
 // Read RSS URL from CLI arg, library.json, or fallback
@@ -34,7 +50,36 @@ if (!targetRssUrl && fs.existsSync(OUTPUT_PATH)) {
   }
 }
 
-const RSS_URL = targetRssUrl || 'https://www.goodreads.com/review/list_rss/user?shelf=favourites';
+const RSS_URL = targetRssUrl ? normalizeRssQuery(targetRssUrl) : '';
+
+if (!RSS_URL) {
+  console.error(
+    'No Goodreads shelf URL configured.\n' +
+      'Pass one as an argument, e.g.\n' +
+      '  node scripts/sync-goodreads.mjs "https://www.goodreads.com/review/list/USER_ID?tag=favourites"\n' +
+      'or set "goodreadsUrl" in content/library.json.'
+  );
+  process.exit(1);
+}
+
+// Preserve any custom-authored fields already present in library.json
+const DEFAULT_LIB = {
+  curator: 'Rahul Rajeev',
+  statement:
+    'A curated shelf of literature, monographs, and philosophy — portraits of a practice in progress.',
+  goodreadsUrl: '',
+  currentlyReading: [],
+  onTopOfMyMind: [],
+};
+
+let existingLib = { ...DEFAULT_LIB };
+if (fs.existsSync(OUTPUT_PATH)) {
+  try {
+    existingLib = { ...DEFAULT_LIB, ...JSON.parse(fs.readFileSync(OUTPUT_PATH, 'utf-8')) };
+  } catch {
+    // ignore read errors, fall back to defaults
+  }
+}
 
 // Palette of aesthetic editorial spine colors (stone, terracotta, sage, deep indigo, burgundy, olive, ocher, charcoal, warm cream)
 const SPINE_PALETTES = [
@@ -155,14 +200,11 @@ async function syncGoodreads() {
     });
 
     // Read existing file to preserve custom reviews, quote snippets, and onTopOfMyMind
-    let existingOnTopOfMyMind = ['book-42771901', 'book-187633'];
+    let existingOnTopOfMyMind = existingLib.onTopOfMyMind;
     const existingBooksMap = new Map();
     if (fs.existsSync(OUTPUT_PATH)) {
       try {
         const existingData = JSON.parse(fs.readFileSync(OUTPUT_PATH, 'utf-8'));
-        if (Array.isArray(existingData.onTopOfMyMind)) {
-          existingOnTopOfMyMind = existingData.onTopOfMyMind;
-        }
         if (Array.isArray(existingData.books)) {
           for (const b of existingData.books) {
             existingBooksMap.set(b.id, b);
@@ -194,17 +236,19 @@ async function syncGoodreads() {
       return b;
     });
 
-    // Also include any spotlight book that might not yet be in the RSS list
-    if (existingBooksMap.has('book-42771901') && !mergedBooks.some(b => b.id === 'book-42771901')) {
-      mergedBooks.unshift(existingBooksMap.get('book-42771901'));
+    // Sanitize the spotlight list: keep only IDs that exist in the synced shelf,
+    // and fall back to the first few books so the spotlight is never empty.
+    const syncedIds = new Set(mergedBooks.map((b) => b.id));
+    let spotlightIds = existingOnTopOfMyMind.filter((id) => syncedIds.has(id));
+    if (spotlightIds.length === 0) {
+      spotlightIds = mergedBooks.slice(0, 3).map((b) => b.id);
     }
 
     const libraryData = {
-      curator: existingLib.curator || "Curator",
-      statement: existingLib.statement || "A curated collection of foundational treatises, essays, and visual monographs synced from Goodreads.",
-      goodreadsUrl: targetRssUrl || existingLib.goodreadsUrl || "",
+      ...existingLib,
+      goodreadsUrl: existingLib.goodreadsUrl || targetRssUrl || "",
       lastSynced: new Date().toISOString().split('T')[0],
-      onTopOfMyMind: existingOnTopOfMyMind,
+      onTopOfMyMind: spotlightIds,
       books: mergedBooks,
     };
 

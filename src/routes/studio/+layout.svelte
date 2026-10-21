@@ -24,7 +24,8 @@
     Camera,
     Palette,
     Sliders,
-    X
+    X,
+    BarChart2
   } from '@lucide/svelte';
 
   let { data, children } = $props();
@@ -712,6 +713,19 @@
                   </span>
                   <span class="text-[9px] font-mono bg-emerald-100 text-emerald-800 px-1 rounded shrink-0">Live</span>
                 </a>
+
+                <a
+                  href="/studio/protocol/analytics"
+                  class="flex items-center justify-between text-xs px-2.5 py-1.5 rounded transition-colors {pathname === '/studio/protocol/analytics'
+                    ? 'bg-[#E0DBD0] text-[#1E1D1B] font-semibold border-l-2 border-stone-800'
+                    : 'text-stone-700 hover:text-[#2C2B29] hover:bg-[#EAE6DE]'}"
+                >
+                  <span class="flex items-center gap-1.5 truncate">
+                    <BarChart2 size={13} class="text-amber-700 shrink-0" />
+                    <span class="truncate">Analytics (GoatCounter)</span>
+                  </span>
+                  <span class="text-[9px] font-mono bg-emerald-100 text-emerald-800 px-1 rounded shrink-0">Live</span>
+                </a>
               </div>
             {/if}
           </div>
@@ -797,6 +811,16 @@
             title="Site SEO & Meta"
           >
             <Globe size={16} />
+          </a>
+
+          <a
+            href="/studio/protocol/analytics"
+            class="p-2.5 rounded-md transition-colors {pathname === '/studio/protocol/analytics'
+              ? 'bg-[#E0DBD0] text-amber-900 font-semibold'
+              : 'text-stone-500 hover:text-stone-800 hover:bg-[#EAE6DE]'}"
+            title="Analytics (GoatCounter)"
+          >
+            <BarChart2 size={16} />
           </a>
         </div>
       {/if}

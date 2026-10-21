@@ -18,9 +18,10 @@
   let { data } = $props();
 
   // SEO Workbench State
-  let seoSettings = $state<SeoSettings>(
-    JSON.parse(JSON.stringify(data.seoSettings || {}))
-  );
+  let seoSettings = $state<SeoSettings>({} as SeoSettings);
+  $effect(() => {
+    seoSettings = JSON.parse(JSON.stringify(data.seoSettings || {}));
+  });
   let isSavingSeo = $state(false);
   let saveSeoSuccess = $state(false);
   let saveSeoError = $state<string | null>(null);
@@ -218,8 +219,9 @@
 
         <div class="space-y-4">
           <div class="space-y-1">
-            <label class="text-xs font-mono text-stone-600 block">Site Title</label>
+            <label for="seo-site-title" class="text-xs font-mono text-stone-600 block">Site Title</label>
             <input
+              id="seo-site-title"
               type="text"
               bind:value={seoSettings.siteTitle}
               class="w-full bg-[#FAF8F5] border border-[#DDD9CE] rounded px-3 py-1.5 text-xs text-stone-900 focus:outline-none focus:border-stone-500 font-sans"
@@ -227,8 +229,9 @@
           </div>
 
           <div class="space-y-1">
-            <label class="text-xs font-mono text-stone-600 block">Title Template (%s = page title)</label>
+            <label for="seo-title-template" class="text-xs font-mono text-stone-600 block">Title Template (%s = page title)</label>
             <input
+              id="seo-title-template"
               type="text"
               bind:value={seoSettings.titleTemplate}
               placeholder="%s | Linus Torvalds"
@@ -237,8 +240,9 @@
           </div>
 
           <div class="space-y-1">
-            <label class="text-xs font-mono text-stone-600 block">Default Meta Description</label>
+            <label for="seo-default-description" class="text-xs font-mono text-stone-600 block">Default Meta Description</label>
             <textarea
+              id="seo-default-description"
               bind:value={seoSettings.defaultDescription}
               rows={3}
               class="w-full bg-[#FAF8F5] border border-[#DDD9CE] rounded px-3 py-1.5 text-xs text-stone-900 focus:outline-none focus:border-stone-500 font-serif resize-none"
@@ -247,8 +251,9 @@
 
           <div class="grid grid-cols-2 gap-3">
             <div class="space-y-1">
-              <label class="text-xs font-mono text-stone-600 block">Canonical Base URL</label>
+              <label for="seo-site-url" class="text-xs font-mono text-stone-600 block">Canonical Base URL</label>
               <input
+                id="seo-site-url"
                 type="text"
                 bind:value={seoSettings.siteUrl}
                 placeholder="https://example.com"
@@ -257,8 +262,9 @@
             </div>
 
             <div class="space-y-1">
-              <label class="text-xs font-mono text-stone-600 block">Twitter / X Handle</label>
+              <label for="seo-twitter-handle" class="text-xs font-mono text-stone-600 block">Twitter / X Handle</label>
               <input
+                id="seo-twitter-handle"
                 type="text"
                 bind:value={seoSettings.twitterHandle}
                 placeholder="@torvalds"
@@ -268,9 +274,10 @@
           </div>
 
           <div class="space-y-1">
-            <label class="text-xs font-mono text-stone-600 block">Default OpenGraph Image URL</label>
+            <label for="seo-og-image" class="text-xs font-mono text-stone-600 block">Default OpenGraph Image URL</label>
             <div class="flex items-center gap-2">
               <input
+                id="seo-og-image"
                 type="text"
                 bind:value={seoSettings.defaultOgImage}
                 placeholder="/images/avatar.webp"
@@ -300,16 +307,18 @@
         <div class="space-y-4">
           <div class="grid grid-cols-2 gap-3">
             <div class="space-y-1">
-              <label class="text-xs font-mono text-stone-600 block">Full Name</label>
+              <label for="seo-author-name" class="text-xs font-mono text-stone-600 block">Full Name</label>
               <input
+                id="seo-author-name"
                 type="text"
                 bind:value={seoSettings.author.name}
                 class="w-full bg-[#FAF8F5] border border-[#DDD9CE] rounded px-3 py-1.5 text-xs text-stone-900 focus:outline-none focus:border-stone-500"
               />
             </div>
             <div class="space-y-1">
-              <label class="text-xs font-mono text-stone-600 block">Job Title / Role</label>
+              <label for="seo-author-job" class="text-xs font-mono text-stone-600 block">Job Title / Role</label>
               <input
+                id="seo-author-job"
                 type="text"
                 bind:value={seoSettings.author.jobTitle}
                 class="w-full bg-[#FAF8F5] border border-[#DDD9CE] rounded px-3 py-1.5 text-xs text-stone-900 focus:outline-none focus:border-stone-500"
@@ -318,8 +327,9 @@
           </div>
 
           <div class="space-y-1">
-            <label class="text-xs font-mono text-stone-600 block">Location</label>
+            <label for="seo-author-location" class="text-xs font-mono text-stone-600 block">Location</label>
             <input
+              id="seo-author-location"
               type="text"
               bind:value={seoSettings.author.location}
               class="w-full bg-[#FAF8F5] border border-[#DDD9CE] rounded px-3 py-1.5 text-xs text-stone-900 focus:outline-none focus:border-stone-500"
@@ -328,7 +338,7 @@
 
           <!-- Social sameAs URLs -->
           <div class="space-y-2">
-            <label class="text-xs font-mono text-stone-600 block">SameAs Social Graph Links (Schema.org)</label>
+            <span class="text-xs font-mono text-stone-600 block">SameAs Social Graph Links (Schema.org)</span>
             <div class="space-y-1.5">
               {#if Array.isArray(seoSettings.author.sameAs)}
                 {#each seoSettings.author.sameAs as url, index}

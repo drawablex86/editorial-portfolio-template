@@ -29,6 +29,13 @@ export const DEFAULT_SEO_SETTINGS: SeoSettings = {
     { from: '/play', to: '/works', status: 301 },
     { from: '/essays', to: '/blog', status: 301 },
   ],
+  goatCounter: {
+    enabled: false,
+    code: '',
+    domain: '',
+    allowFrame: false,
+    email: '',
+  },
 };
 
 function getSettingsPath(): string {
@@ -51,6 +58,10 @@ export function getSeoSettings(): SeoSettings {
         ...DEFAULT_SEO_SETTINGS.author,
         ...(parsed.author || {}),
       },
+      goatCounter: {
+        ...DEFAULT_SEO_SETTINGS.goatCounter,
+        ...(parsed.goatCounter || {}),
+      },
       redirects: Array.isArray(parsed.redirects) ? parsed.redirects : DEFAULT_SEO_SETTINGS.redirects,
     };
   } catch (err) {
@@ -68,6 +79,10 @@ export function saveSeoSettings(settings: Partial<SeoSettings>): { success: bool
       author: {
         ...current.author,
         ...(settings.author || {}),
+      },
+      goatCounter: {
+        ...current.goatCounter,
+        ...(settings.goatCounter || {}),
       },
       redirects: Array.isArray(settings.redirects) ? settings.redirects : current.redirects,
     };

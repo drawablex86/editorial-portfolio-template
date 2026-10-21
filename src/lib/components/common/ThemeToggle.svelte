@@ -56,6 +56,7 @@
     type="button"
     onclick={toggleTheme}
     aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+    aria-pressed={theme === 'dark'}
     title={theme === 'dark' ? 'Light mode (Warm linen)' : 'Dark mode (Obsidian paper)'}
     class="min-h-[38px] min-w-[38px] p-2 text-stone-600 dark:text-stone-300 hover:text-[#2C2B29] dark:hover:text-[#EDE9E1] border border-transparent hover:border-stone-300 dark:hover:border-stone-700 bg-black/0 hover:bg-black/5 dark:hover:bg-white/5 rounded transition-all duration-200 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-[#2C2B29] dark:focus:ring-[#EDE9E1] cursor-pointer"
   >

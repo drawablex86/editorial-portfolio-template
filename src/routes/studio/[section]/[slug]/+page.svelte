@@ -36,9 +36,15 @@
   let slug = $derived(data.slug);
   let isNew = $derived(data.isNew);
 
-  let targetSlug = $state(data.slug === 'new' ? '' : data.slug);
-  let frontmatter = $state<Record<string, any>>(JSON.parse(JSON.stringify(data.data || {})));
-  let bodyContent = $state(data.content || '');
+  let targetSlug = $state('');
+  let frontmatter = $state<Record<string, any>>({});
+  let bodyContent = $state('');
+
+  $effect(() => {
+    targetSlug = data.slug === 'new' ? '' : data.slug;
+    frontmatter = JSON.parse(JSON.stringify(data.data || {}));
+    bodyContent = data.content || '';
+  });
 
   // UI state: split view is default
   let viewMode = $state<'split' | 'edit' | 'preview'>('split');
@@ -475,8 +481,9 @@
               </h3>
 
               <div class="space-y-1">
-                <label class="text-xs font-mono text-stone-600 block">Title</label>
+                <label for="meta-title" class="text-xs font-mono text-stone-600 block">Title</label>
                 <input
+                  id="meta-title"
                   type="text"
                   bind:value={frontmatter.title}
                   placeholder="Document Title"
@@ -486,8 +493,9 @@
 
               <div class="grid grid-cols-2 gap-3">
                 <div class="space-y-1">
-                  <label class="text-xs font-mono text-stone-600 block">Year / Date</label>
+                  <label for="meta-year" class="text-xs font-mono text-stone-600 block">Year / Date</label>
                   <input
+                    id="meta-year"
                     type="text"
                     bind:value={frontmatter.year}
                     class="w-full bg-white border border-[#DDD9CE] rounded px-3 py-1.5 text-xs text-stone-900 focus:outline-none focus:border-stone-500"
@@ -495,8 +503,9 @@
                 </div>
 
                 <div class="space-y-1">
-                  <label class="text-xs font-mono text-stone-600 block">Tags / Categories</label>
+                  <label for="meta-tags" class="text-xs font-mono text-stone-600 block">Tags / Categories</label>
                   <input
+                    id="meta-tags"
                     type="text"
                     bind:value={frontmatter.tags}
                     placeholder="e.g. brand identity / systems design"
@@ -506,8 +515,9 @@
               </div>
 
               <div class="space-y-1">
-                <label class="text-xs font-mono text-stone-600 block">Summary / Description</label>
+                <label for="meta-description" class="text-xs font-mono text-stone-600 block">Summary / Description</label>
                 <textarea
+                  id="meta-description"
                   bind:value={frontmatter.description}
                   rows={2}
                   placeholder="Brief synopsis of this piece..."
@@ -523,8 +533,9 @@
                 </h4>
 
                 <div class="space-y-1">
-                  <label class="text-[11px] font-mono text-stone-600 block">Custom SEO Title (defaults to title)</label>
+                  <label for="meta-seo-title" class="text-[11px] font-mono text-stone-600 block">Custom SEO Title (defaults to title)</label>
                   <input
+                    id="meta-seo-title"
                     type="text"
                     bind:value={frontmatter.seoTitle}
                     placeholder="e.g. {frontmatter.title || 'Custom Title'}"
@@ -533,8 +544,9 @@
                 </div>
 
                 <div class="space-y-1">
-                  <label class="text-[11px] font-mono text-stone-600 block">SEO Meta Description</label>
+                  <label for="meta-seo-description" class="text-[11px] font-mono text-stone-600 block">SEO Meta Description</label>
                   <textarea
+                    id="meta-seo-description"
                     bind:value={frontmatter.seoDescription}
                     rows={2}
                     placeholder="Excerpt tailored for search results and Twitter cards..."
@@ -544,8 +556,9 @@
 
                 <div class="grid grid-cols-2 gap-3 pt-1">
                   <div class="space-y-1">
-                    <label class="text-[11px] font-mono text-stone-600 block">Custom OG Share Image</label>
+                    <label for="meta-og-image" class="text-[11px] font-mono text-stone-600 block">Custom OG Share Image</label>
                     <input
+                      id="meta-og-image"
                       type="text"
                       bind:value={frontmatter.ogImage}
                       placeholder="/images/og-share.webp"
@@ -646,8 +659,9 @@
                   <!-- Book Search and Select Dropdown -->
                   <div class="space-y-2 bg-white p-3 border border-[#DDD9CE] rounded-lg">
                     <div class="space-y-1">
-                      <label class="text-[11px] font-mono text-stone-600 block">Search Library Books</label>
+                      <label for="book-search-input" class="text-[11px] font-mono text-stone-600 block">Search Library Books</label>
                       <input
+                        id="book-search-input"
                         type="text"
                         placeholder="Search by book title or author..."
                         bind:value={bookSearchQuery}
@@ -707,8 +721,9 @@
 
                 <div class="grid grid-cols-2 gap-3">
                   <div class="space-y-1">
-                    <label class="text-xs font-mono text-stone-600 block">Project Type</label>
+                    <label for="meta-project-type" class="text-xs font-mono text-stone-600 block">Project Type</label>
                     <select
+                      id="meta-project-type"
                       bind:value={frontmatter.projectType}
                       onchange={() => {
                         // Keep archetype synced with projectType for presentation layout defaults
@@ -733,8 +748,9 @@
                   </div>
 
                   <div class="space-y-1">
-                    <label class="text-xs font-mono text-stone-600 block">Presentation Layout</label>
+                    <label for="meta-archetype" class="text-xs font-mono text-stone-600 block">Presentation Layout</label>
                     <select
+                      id="meta-archetype"
                       bind:value={frontmatter.archetype}
                       class="w-full bg-white border border-[#DDD9CE] rounded px-3 py-1.5 text-xs text-stone-900 focus:outline-none focus:border-stone-500"
                     >
@@ -748,8 +764,9 @@
 
                 <div class="grid grid-cols-2 gap-3">
                   <div class="space-y-1">
-                    <label class="text-xs font-mono text-stone-600 block">Client / Organization / Context</label>
+                    <label for="meta-client" class="text-xs font-mono text-stone-600 block">Client / Organization / Context</label>
                     <input
+                      id="meta-client"
                       type="text"
                       bind:value={frontmatter.client}
                       placeholder="e.g. H&R Block or Self-initiated"
@@ -758,8 +775,9 @@
                   </div>
 
                   <div class="space-y-1">
-                    <label class="text-xs font-mono text-stone-600 block">Role / Practice</label>
+                    <label for="meta-role" class="text-xs font-mono text-stone-600 block">Role / Practice</label>
                     <input
+                      id="meta-role"
                       type="text"
                       bind:value={frontmatter.role}
                       placeholder="e.g. Lead Designer / Artist"
@@ -772,8 +790,9 @@
                 {#if frontmatter.projectType === 'product_design' || frontmatter.archetype === 'product_design' || frontmatter.projectType === 'experiment'}
                   <div class="grid grid-cols-2 gap-3">
                     <div class="space-y-1">
-                      <label class="text-xs font-mono text-stone-600 block">Live Application URL</label>
+                      <label for="meta-live-url" class="text-xs font-mono text-stone-600 block">Live Application URL</label>
                       <input
+                        id="meta-live-url"
                         type="text"
                         bind:value={frontmatter.liveUrl}
                         placeholder="https://..."
@@ -781,8 +800,9 @@
                       />
                     </div>
                     <div class="space-y-1">
-                      <label class="text-xs font-mono text-stone-600 block">Prototype / Repository URL</label>
+                      <label for="meta-prototype-url" class="text-xs font-mono text-stone-600 block">Prototype / Repository URL</label>
                       <input
+                        id="meta-prototype-url"
                         type="text"
                         bind:value={frontmatter.prototypeUrl}
                         placeholder="https://..."
@@ -796,8 +816,9 @@
                 {#if frontmatter.projectType === 'photography' || frontmatter.archetype === 'photo_album'}
                   <div class="grid grid-cols-3 gap-3">
                     <div class="space-y-1">
-                      <label class="text-xs font-mono text-stone-600 block">Camera</label>
+                      <label for="meta-camera" class="text-xs font-mono text-stone-600 block">Camera</label>
                       <input
+                        id="meta-camera"
                         type="text"
                         bind:value={frontmatter.camera}
                         placeholder="e.g. Leica Q2"
@@ -805,8 +826,9 @@
                       />
                     </div>
                     <div class="space-y-1">
-                      <label class="text-xs font-mono text-stone-600 block">Lens</label>
+                      <label for="meta-lens" class="text-xs font-mono text-stone-600 block">Lens</label>
                       <input
+                        id="meta-lens"
                         type="text"
                         bind:value={frontmatter.lens}
                         placeholder="e.g. 28mm f/1.7"
@@ -814,8 +836,9 @@
                       />
                     </div>
                     <div class="space-y-1">
-                      <label class="text-xs font-mono text-stone-600 block">Location</label>
+                      <label for="meta-location" class="text-xs font-mono text-stone-600 block">Location</label>
                       <input
+                        id="meta-location"
                         type="text"
                         bind:value={frontmatter.location}
                         placeholder="e.g. City, Country"
@@ -829,8 +852,9 @@
                 {#if frontmatter.projectType === 'illustration' || frontmatter.archetype === 'illustration'}
                   <div class="grid grid-cols-2 gap-3">
                     <div class="space-y-1">
-                      <label class="text-xs font-mono text-stone-600 block">Medium / Materials</label>
+                      <label for="meta-medium" class="text-xs font-mono text-stone-600 block">Medium / Materials</label>
                       <input
+                        id="meta-medium"
                         type="text"
                         bind:value={frontmatter.medium}
                         placeholder="e.g. Oil and cold wax on linen"
@@ -838,8 +862,9 @@
                       />
                     </div>
                     <div class="space-y-1">
-                      <label class="text-xs font-mono text-stone-600 block">Dimensions</label>
+                      <label for="meta-dimensions" class="text-xs font-mono text-stone-600 block">Dimensions</label>
                       <input
+                        id="meta-dimensions"
                         type="text"
                         bind:value={frontmatter.dimensions}
                         placeholder="e.g. 48 × 36 inches"
@@ -858,9 +883,10 @@
               </h3>
 
               <div class="space-y-2">
-                <label class="text-xs font-mono text-stone-600 block">Thumbnail Image Path or URL</label>
+                <label for="meta-thumbnail-src" class="text-xs font-mono text-stone-600 block">Thumbnail Image Path or URL</label>
                 <div class="flex items-center gap-2">
                   <input
+                    id="meta-thumbnail-src"
                     type="text"
                     bind:value={frontmatter.thumbnailSrc}
                     placeholder="/images/example.webp or https://..."
@@ -889,7 +915,7 @@
               {#if section === 'work' || section === 'play'}
                 <div class="space-y-2 pt-2">
                   <div class="flex items-center justify-between">
-                    <label class="text-xs font-mono text-stone-600 block">Project Gallery Images</label>
+                    <span class="text-xs font-mono text-stone-600 block">Project Gallery Images</span>
                     <label class="text-[11px] font-mono text-stone-700 hover:underline cursor-pointer">
                       <Upload size={11} class="inline mr-0.5" />
                       <span>Upload &amp; Add</span>

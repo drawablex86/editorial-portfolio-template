@@ -27,9 +27,17 @@
     src: string;
   }
 
-  let frontmatter = $state<Record<string, any>>(JSON.parse(JSON.stringify(data.data || {})));
-  let plates = $state<DeskPlate[]>(Array.isArray(frontmatter.sheets) ? frontmatter.sheets : []);
+  let frontmatter = $state<Record<string, any>>({});
+  let plates = $state<DeskPlate[]>([]);
   let selectedPlateIndex = $state<number>(0);
+
+  $effect(() => {
+    const dataObj = JSON.parse(JSON.stringify(data.data || {}));
+    frontmatter = dataObj;
+    if (plates.length === 0 && Array.isArray(dataObj.sheets)) {
+      plates = dataObj.sheets;
+    }
+  });
 
   let isSaving = $state(false);
   let saveSuccess = $state(false);
@@ -302,8 +310,9 @@
             {#if isSelected}
               <div class="px-3 pb-3.5 pt-2 border-t border-stone-200/60 bg-stone-50/50 space-y-3">
                 <div class="space-y-1">
-                  <label class="text-[11px] font-mono text-stone-600 block">Plate Title</label>
+                  <label for="plate-title-{idx}" class="text-[11px] font-mono text-stone-600 block">Plate Title</label>
                   <input
+                    id="plate-title-{idx}"
                     type="text"
                     bind:value={plate.title}
                     placeholder="e.g. Figure Study I"
@@ -312,8 +321,9 @@
                 </div>
 
                 <div class="space-y-1">
-                  <label class="text-[11px] font-mono text-stone-600 block">Caption &amp; Medium</label>
+                  <label for="plate-caption-{idx}" class="text-[11px] font-mono text-stone-600 block">Caption &amp; Medium</label>
                   <input
+                    id="plate-caption-{idx}"
                     type="text"
                     bind:value={plate.caption}
                     placeholder="e.g. Charcoal & graphite on cold-pressed linen"
@@ -322,9 +332,10 @@
                 </div>
 
                 <div class="space-y-1">
-                  <label class="text-[11px] font-mono text-stone-600 block">Artwork Image Path</label>
+                  <label for="plate-src-{idx}" class="text-[11px] font-mono text-stone-600 block">Artwork Image Path</label>
                   <div class="flex items-center gap-2">
                     <input
+                      id="plate-src-{idx}"
                       type="text"
                       bind:value={plate.src}
                       placeholder="/images/sketch-1.webp"

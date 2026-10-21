@@ -17,7 +17,13 @@
 
   let { data, form } = $props();
   let zines = $derived(data.zines || []);
-  let selectedZine = $state<any>(zines[0] || null);
+  let selectedZine = $state<any>(null);
+
+  $effect(() => {
+    if (!selectedZine && zines.length > 0) {
+      selectedZine = zines[0];
+    }
+  });
 
   let isUploading = $state(false);
   let showDeleteConfirm = $state(false);

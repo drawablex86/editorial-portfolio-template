@@ -3,6 +3,7 @@
   import { fade, scale } from 'svelte/transition';
   import { cubicOut } from 'svelte/easing';
   import type { BookItem } from '$lib/types';
+  import { trapFocus } from '$lib/overlay';
   import { X, ExternalLink, BookOpen, Star, Sparkles, ChevronLeft, ChevronRight, Quote } from '@lucide/svelte';
 
   interface Props {
@@ -13,6 +14,8 @@
   }
 
   let { book, onClose, onSelectBook, allBooks = [] }: Props = $props();
+
+  let modalEl: HTMLDivElement | null = $state(null);
 
   let currentIndex = $derived(
     book && allBooks.length > 0 ? allBooks.findIndex((b) => b.id === book.id) : -1
@@ -51,13 +54,21 @@
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   });
+
+  // Focus trap + scroll lock + focus restore while a book is open.
+  $effect(() => {
+    if (!book || !modalEl) return;
+    return trapFocus(modalEl);
+  });
 </script>
 
 {#if book}
   <div
+    bind:this={modalEl}
     role="dialog"
     aria-modal="true"
     aria-labelledby="modal-book-title"
+    tabindex="-1"
     class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-10"
   >
     <!-- Backdrop with fade transition -->
@@ -71,12 +82,12 @@
     <!-- Modal Container with scale/fade transition -->
     <div
       transition:scale={{ duration: 240, start: 0.96, easing: cubicOut }}
-      class="relative w-full max-w-2xl bg-[#F4F2ED] dark:bg-[#1A1826] border border-[#E8E6DF] dark:border-[#2E2A40] rounded-xl shadow-2xl overflow-hidden z-10 text-[#2C2B29] dark:text-[#EDE9E1]"
+      class="relative w-full max-w-2xl bg-[#F4F2ED] dark:bg-[#1C1B19] border border-[#E8E6DF] dark:border-[#2E2C28] rounded-xl shadow-2xl overflow-hidden z-10 text-[#2C2B29] dark:text-[#EDE9E1]"
     >
       <!-- Close Button -->
       <button
         onclick={onClose}
-        class="absolute top-4 right-4 z-20 p-2 rounded-full bg-stone-200/60 dark:bg-stone-800/60 hover:bg-stone-300 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
+        class="absolute top-4 right-4 z-20 p-2 rounded-full bg-stone-200/60 dark:bg-stone-800/60 hover:bg-stone-300 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 transition-colors focus:outline-none focus:ring-2 focus:ring-[#2C2B29] dark:focus:ring-[#EDE9E1] cursor-pointer"
         aria-label="Close book details"
       >
         <X size={18} />
@@ -122,7 +133,7 @@
         <div class="flex flex-col justify-between flex-1 space-y-4">
           <div>
             <div class="flex items-center gap-2 mb-2 text-xs font-mono tracking-wider uppercase text-stone-500 dark:text-stone-400">
-              <span class="px-2 py-0.5 rounded bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/20">
+              <span class="px-2 py-0.5 rounded bg-stone-500/10 text-stone-700 dark:text-stone-300 border border-stone-500/20">
                 Goodreads Favourite
               </span>
               {#if book.publishYear}
@@ -141,11 +152,11 @@
             </p>
 
             {#if book.rating && book.rating > 0}
-              <div class="flex items-center gap-1 mt-3 text-amber-500 dark:text-amber-400">
+              <div class="flex items-center gap-1 mt-3 text-stone-600 dark:text-stone-400">
                 {#each Array(5) as _, i}
                   <Star
                     size={15}
-                    class={i < (book.rating || 0) ? 'fill-amber-400 text-amber-500' : 'text-stone-300 dark:text-stone-700'}
+                    class={i < (book.rating || 0) ? 'fill-stone-500 text-stone-500 dark:fill-stone-400 dark:text-stone-400' : 'text-stone-300 dark:text-stone-700'}
                   />
                 {/each}
                 <span class="text-xs font-mono ml-2 text-stone-500 dark:text-stone-400">
@@ -155,8 +166,8 @@
             {/if}
 
             {#if book.quoteSnippet}
-              <div class="mt-3.5 p-3 bg-amber-500/5 dark:bg-amber-400/5 border-l-2 border-amber-500/60 rounded-r-md">
-                <div class="text-[10px] font-mono uppercase tracking-widest text-amber-700 dark:text-amber-300 flex items-center gap-1 mb-1">
+              <div class="mt-3.5 p-3 bg-stone-500/5 border-l-2 border-stone-500/60 rounded-r-md">
+                <div class="text-[10px] font-mono uppercase tracking-widest text-stone-600 dark:text-stone-300 flex items-center gap-1 mb-1">
                   <Quote size={11} />
                   <span>Highlight</span>
                 </div>
@@ -167,9 +178,9 @@
             {/if}
 
             {#if book.userReview}
-              <div class="mt-3 p-3.5 bg-stone-200/50 dark:bg-[#232035] border border-stone-300/60 dark:border-stone-700/50 rounded-lg">
+              <div class="mt-3 p-3.5 bg-stone-200/50 dark:bg-[#242320] border border-stone-300/60 dark:border-stone-700/50 rounded-lg">
                 <div class="text-[11px] font-mono uppercase tracking-widest text-stone-500 dark:text-stone-400 flex items-center gap-1 mb-1.5">
-                  <Sparkles size={12} class="text-amber-500" />
+                  <Sparkles size={12} class="text-stone-500 dark:text-stone-400" />
                   <span>Curator&apos;s Review</span>
                 </div>
                 <p class="text-xs sm:text-sm font-serif italic text-stone-700 dark:text-stone-300 leading-relaxed">
@@ -187,7 +198,7 @@
             {#if book.notesSlug}
               <a
                 href={`/blog/${book.notesSlug.replace(/^\/blog\//, '').replace(/^\//, '')}`}
-                class="flex-1 min-h-[40px] px-4 py-2 bg-[#2C2B29] dark:bg-[#EDE9E1] text-[#F4F2ED] dark:text-[#141312] hover:bg-stone-800 dark:hover:bg-white rounded-lg text-xs font-medium tracking-wide flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-500"
+                class="flex-1 min-h-[40px] px-4 py-2 bg-[#2C2B29] dark:bg-[#EDE9E1] text-[#F4F2ED] dark:text-[#141312] hover:bg-stone-800 dark:hover:bg-white rounded-lg text-xs font-medium tracking-wide flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2C2B29] dark:focus:ring-[#EDE9E1]"
               >
                 <BookOpen size={15} />
                 <span>Read Notes</span>
@@ -195,9 +206,9 @@
             {:else}
               <a
                 href="/blog"
-                class="flex-1 min-h-[40px] px-4 py-2 bg-stone-200/80 dark:bg-[#252136] hover:bg-stone-300 dark:hover:bg-[#2F2A45] text-stone-800 dark:text-stone-200 border border-stone-300/70 dark:border-stone-700/60 rounded-lg text-xs font-medium tracking-wide flex items-center justify-center gap-2 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-500"
+                class="flex-1 min-h-[40px] px-4 py-2 bg-stone-200/80 dark:bg-[#242320] hover:bg-stone-300 dark:hover:bg-[#2E2C28] text-stone-800 dark:text-stone-200 border border-stone-300/70 dark:border-stone-700/60 rounded-lg text-xs font-medium tracking-wide flex items-center justify-center gap-2 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2C2B29] dark:focus:ring-[#EDE9E1]"
               >
-                <BookOpen size={15} class="text-amber-600 dark:text-amber-400" />
+                <BookOpen size={15} class="text-stone-600 dark:text-stone-400" />
                 <span>Explore Essays</span>
               </a>
             {/if}
@@ -206,7 +217,7 @@
               href={book.goodreadsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              class="px-4 py-2 bg-stone-200/70 dark:bg-stone-800/80 hover:bg-stone-300 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-colors border border-stone-300/50 dark:border-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              class="px-4 py-2 bg-stone-200/70 dark:bg-stone-800/80 hover:bg-stone-300 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-colors border border-stone-300/50 dark:border-stone-700 focus:outline-none focus:ring-2 focus:ring-[#2C2B29] dark:focus:ring-[#EDE9E1]"
             >
               <span>Goodreads</span>
               <ExternalLink size={13} />

@@ -13,7 +13,8 @@
     ChevronDown, 
     ChevronUp,
     Sparkles,
-    ArrowRight
+    ArrowRight,
+    FileText
   } from '@lucide/svelte';
 
   let status = $derived(page.status || 404);
@@ -25,8 +26,9 @@
       : 'An unexpected internal studio exception occurred during typesetting or rendering.')
   );
 
-  // Countdown auto-redirect state
-  const INITIAL_COUNTDOWN = 10;
+  // Countdown auto-redirect state (generous delay so it never yanks users
+  // away while they are inspecting a mistyped deep link)
+  const INITIAL_COUNTDOWN = 30;
   let secondsRemaining = $state(INITIAL_COUNTDOWN);
   let isTimerPaused = $state(false);
   let hasInteractedWithTimer = $state(false);
@@ -100,7 +102,7 @@
 </script>
 
 <svelte:head>
-  <title>{status} — {is404 ? 'Folio Not Located' : 'Studio Interruption'} | Linus Torvalds</title>
+  <title>{status} — {is404 ? 'Folio Not Located' : 'Studio Interruption'}</title>
   <meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
@@ -342,11 +344,29 @@
           <span>Peruse Library</span>
           <span class="opacity-60 text-[10px] hidden sm:inline ml-0.5 border border-stone-300 dark:border-stone-700 px-1 py-0.2 rounded font-mono">L</span>
         </a>
+
+        <!-- Writing -->
+        <a
+          href="/blog"
+          class="group inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white dark:bg-stone-900 border border-[#DDD9CE] dark:border-stone-800 text-stone-800 dark:text-stone-200 text-xs font-mono hover:bg-stone-50 dark:hover:bg-stone-800 transition-all shadow-2xs hover:shadow-xs"
+        >
+          <FileText size={13} />
+          <span>Read Writing</span>
+        </a>
+
+        <!-- About -->
+        <a
+          href="/about"
+          class="group inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white dark:bg-stone-900 border border-[#DDD9CE] dark:border-stone-800 text-stone-800 dark:text-stone-200 text-xs font-mono hover:bg-stone-50 dark:hover:bg-stone-800 transition-all shadow-2xs hover:shadow-xs"
+        >
+          <ArrowRight size={13} />
+          <span>About the Studio</span>
+        </a>
       </div>
 
       <!-- Quick keyboard helper note -->
       <p class="text-[11px] font-mono text-stone-600 dark:text-stone-400">
-        Hotkeys: <kbd class="px-1 py-0.5 bg-stone-200/70 dark:bg-stone-800 rounded text-[10px]">H</kbd> home &bull; <kbd class="px-1 py-0.5 bg-stone-200/70 dark:bg-stone-800 rounded text-[10px]">P</kbd> projects &bull; <kbd class="px-1 py-0.5 bg-stone-200/70 dark:bg-stone-800 rounded text-[10px]">Space</kbd> pause timer
+        Hotkeys: <kbd class="px-1 py-0.5 bg-stone-200/70 dark:bg-stone-800 rounded text-[10px]">H</kbd> home &bull; <kbd class="px-1 py-0.5 bg-stone-200/70 dark:bg-stone-800 rounded text-[10px]">W</kbd> works &bull; <kbd class="px-1 py-0.5 bg-stone-200/70 dark:bg-stone-800 rounded text-[10px]">L</kbd> library &bull; <kbd class="px-1 py-0.5 bg-stone-200/70 dark:bg-stone-800 rounded text-[10px]">Space</kbd> pause timer
       </p>
     </div>
 
@@ -376,7 +396,7 @@
             {errorMessage}
           </div>
           <p class="text-[10px] text-stone-500 dark:text-stone-500 leading-normal">
-            If you believe this link should exist, please report it via studio contacts or check the main navigation index.
+            If you believe this link should exist, please <a href="/about" class="underline underline-offset-2 hover:text-stone-800 dark:hover:text-stone-300">report it via the studio contact page</a> or check the main navigation index.
           </p>
         </div>
       {/if}

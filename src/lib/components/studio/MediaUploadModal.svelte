@@ -266,7 +266,7 @@
             </div>
 
             <div class="space-y-3">
-              {#each stagedFiles as item (item.id)}
+              {#each stagedFiles as item, idx (item.id)}
                 <div class="p-4 bg-white border border-[#DDD9CE] rounded-xl flex flex-col md:flex-row gap-4 transition-all">
                   <!-- Thumbnail preview -->
                   <div class="w-20 h-20 bg-stone-100 rounded-lg overflow-hidden border border-[#EAE6DE] shrink-0 self-start">
@@ -321,8 +321,9 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
                       <!-- Subfolder selector -->
                       <div class="space-y-1">
-                        <label class="text-[10px] text-stone-500 uppercase tracking-wider block">Target Folder</label>
+                        <label for="subfolder-{idx}" class="text-[10px] text-stone-500 uppercase tracking-wider block">Target Folder</label>
                         <select
+                          id="subfolder-{idx}"
                           bind:value={item.subfolder}
                           disabled={isSubmitting}
                           class="w-full bg-[#FCFBF9] border border-[#DDD9CE] rounded px-2 py-1.5 text-xs text-stone-800 focus:outline-none focus:border-stone-500"
@@ -335,8 +336,9 @@
 
                       <!-- Intent Classification selector -->
                       <div class="space-y-1">
-                        <label class="text-[10px] text-stone-500 uppercase tracking-wider block">Asset Intent</label>
+                        <label for="classification-{idx}" class="text-[10px] text-stone-500 uppercase tracking-wider block">Asset Intent</label>
                         <select
+                          id="classification-{idx}"
                           bind:value={item.classification}
                           disabled={isSubmitting}
                           class="w-full bg-[#FCFBF9] border border-[#DDD9CE] rounded px-2 py-1.5 text-xs text-stone-800 focus:outline-none focus:border-stone-500"
