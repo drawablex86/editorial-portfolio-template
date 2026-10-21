@@ -111,8 +111,14 @@ export function saveAiDeterrenceSettings(
     };
 
     fs.writeFileSync(filePath, JSON.stringify(jsonToSave, null, 2), 'utf-8');
+    console.log('[AI-Deterrence] Settings saved successfully:', { 
+      reserveRights: jsonToSave.reserveRights,
+      blockTrainingCrawlers: jsonToSave.blockTrainingCrawlers,
+      tdmPolicyUrl: jsonToSave.tdmPolicyUrl
+    });
     return { success: true };
   } catch (err: any) {
+    console.error('[AI-Deterrence] Save error:', err);
     return { success: false, error: err.message };
   }
 }

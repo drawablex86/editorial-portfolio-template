@@ -1,26 +1,18 @@
-import { getPipelineStatus } from '$lib/server/pipeline';
-import { getAiDeterrenceSettings, saveAiDeterrenceSettings } from '$lib/server/ai-deterrence';
-import { getPipelineConfig, resolveVaultDir } from '$lib/server/pipelineSettings';
+import { getSeoSettings, saveSeoSettings } from '$lib/server/seo';
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import type { AiDeterrenceConfig } from '$lib/types';
+import type { SeoSettings } from '$lib/types';
 
 export const load: PageServerLoad = async () => {
-  const status = getPipelineStatus();
-  const aiSettings = getAiDeterrenceSettings();
-  const pipelineConfig = getPipelineConfig();
-  const resolvedVault = resolveVaultDir();
+  const seoSettings = getSeoSettings();
 
   return {
-    pipelineStatus: status,
-    aiSettings,
-    pipelineConfig,
-    resolvedVault,
+    seoSettings,
   };
 };
 
 export const actions: Actions = {
-  saveAiSettings: async ({ request }) => {
+  saveSeo: async ({ request }) => {
     const data = await request.formData();
     const payload = data.get('payload');
 
@@ -29,10 +21,10 @@ export const actions: Actions = {
     }
 
     try {
-      const parsed: Partial<AiDeterrenceConfig> = JSON.parse(payload);
-      const res = saveAiDeterrenceSettings(parsed);
+      const parsed: Partial<SeoSettings> = JSON.parse(payload);
+      const res = saveSeoSettings(parsed);
       if (!res.success) {
-        return fail(500, { error: res.error || 'Failed to save AI deterrence settings' });
+        return fail(500, { error: res.error || 'Failed to save SEO settings' });
       }
       return { success: true };
     } catch (e: any) {

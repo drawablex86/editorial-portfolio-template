@@ -94,8 +94,14 @@ export function saveSeoSettings(settings: Partial<SeoSettings>): { success: bool
     }
 
     fs.writeFileSync(filePath, JSON.stringify(merged, null, 2), 'utf-8');
+    console.log('[SEO] Settings saved successfully:', { 
+      siteTitle: merged.siteTitle,
+      hasGoatCounter: !!merged.goatCounter?.code,
+      redirectsCount: merged.redirects?.length 
+    });
     return { success: true };
   } catch (err: any) {
+    console.error('[SEO] Save error:', err);
     return { success: false, error: err.message };
   }
 }

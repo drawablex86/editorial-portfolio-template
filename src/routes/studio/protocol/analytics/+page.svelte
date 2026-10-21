@@ -21,7 +21,7 @@
     code: '',
     domain: '',
     allowFrame: false,
-    email: 'rahulrajeev1975@gmail.com'
+    email: ''
   });
 
   $effect(() => {
@@ -30,7 +30,7 @@
       code: '',
       domain: '',
       allowFrame: false,
-      email: 'rahulrajeev1975@gmail.com'
+      email: ''
     }));
   });
 
@@ -197,7 +197,7 @@
         </span>
       </div>
       <div class="text-base sm:text-lg font-serif text-[#2C2B29] font-medium truncate">
-        {goatCounter.email || 'rahulrajeev1975@gmail.com'}
+        {goatCounter.email || 'your@email.com'}
       </div>
       <p class="text-[11px] font-serif text-stone-500">
         GoatCounter account association
@@ -248,7 +248,7 @@
           id="analytics-code"
           type="text"
           bind:value={goatCounter.code}
-          placeholder="e.g., rahulrajeev"
+          placeholder="e.g., yourname"
           class="w-full max-w-xs bg-[#FAF8F5] border border-[#DDD9CE] rounded px-3 py-1.5 text-xs text-stone-900 focus:outline-none focus:border-stone-500 font-mono"
           disabled={!goatCounter.enabled}
         />
@@ -304,7 +304,7 @@
           id="analytics-email"
           type="email"
           bind:value={goatCounter.email}
-          placeholder="rahulrajeev1975@gmail.com"
+          placeholder="your@email.com"
           class="w-full max-w-xs bg-[#FAF8F5] border border-[#DDD9CE] rounded px-3 py-1.5 text-xs text-stone-900 focus:outline-none focus:border-stone-500 font-mono"
           disabled={!goatCounter.enabled}
         />
@@ -414,7 +414,7 @@
         <h3 class="text-xs font-mono uppercase tracking-wider text-stone-700 mb-2 flex items-center gap-1.5">
           <Settings size={12} /> 1. Create GoatCounter Account
         </h3>
-        <p>Visit <a href="https://goatcounter.com" target="_blank" rel="noopener" class="underline text-amber-700 hover:text-amber-900">goatcounter.com</a> and sign up with <code class="bg-stone-100 px-1 py-0.5 rounded font-mono text-[10px]">rahulrajeev1975@gmail.com</code>. Choose a site code (e.g., <code class="bg-stone-100 px-1 py-0.5 rounded font-mono text-[10px]">rahulrajeev</code>).</p>
+        <p>Visit <a href="https://goatcounter.com" target="_blank" rel="noopener" class="underline text-amber-700 hover:text-amber-900">goatcounter.com</a> and sign up with <code class="bg-stone-100 px-1 py-0.5 rounded font-mono text-[10px]">your@email.com</code>. Choose a site code (e.g., <code class="bg-stone-100 px-1 py-0.5 rounded font-mono text-[10px]">yourname</code>).</p>
       </div>
 
       <div class="p-4 bg-[#FAF8F5] rounded-lg border border-[#DDD9CE]">
