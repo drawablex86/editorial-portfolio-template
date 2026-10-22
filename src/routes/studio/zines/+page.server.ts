@@ -4,6 +4,7 @@ import { processImageFolderZine, processPdfFile } from '$lib/server/zinePipeline
 import { fail } from '@sveltejs/kit';
 import fs from 'fs';
 import path from 'path';
+import type { ZineItem } from '$lib/types';
 
 export const load: PageServerLoad = async () => {
   const zines = getAllZines();
@@ -103,7 +104,7 @@ export const actions: Actions = {
         pages: processed.pages,
         downloadPdfUrl: processed.downloadPdfUrl,
         aiProtected: true,
-      };
+      } satisfies ZineItem;
 
       saveZineManifest(newZine);
 
@@ -168,7 +169,7 @@ export const actions: Actions = {
         binding: 'saddle-stitch' as const,
         pages: processed.pages,
         aiProtected: true,
-      };
+      } satisfies ZineItem;
 
       saveZineManifest(newZine);
 
